@@ -1,0 +1,353 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[left=2.50cm, right=2.50cm, top=3.50cm, bottom=3.50cm]{geometry}
+
+\title{\textbf{Trabajo 1 - Teoría\\ Aprendizaje Automático}}
+
+\author{Francisco Solano López Rodríguez}
+
+
+\begin{document}
+	
+\maketitle
+\begin{enumerate}
+	\item Identificar, para cada una de las siguientes tareas, que tipo de aprendizaje es el adecuado
+	(supervisado, no supervisado, por refuerzo) así como los datos de aprendizaje que deberiamos usar en su caso. Si una tarea se ajusta a más de un tipo, explicar como y describir los datos	para cada tipo.
+	\begin{enumerate}
+		\item Dada una colección de fotos de caras de personas de distintas razas establecer cuantas razas distintas hay representadas en la colección.
+		
+		No supervisado, ya que no disponemos de datos previos y queremos obtener el número de clases (que en este caso son razas) hay representadas en la colección
+		
+		\item Clasificación automática de cartas por distrito postal.
+		
+		Podría ser adecuado por aprendizaje supervisado, ya que necesitamos datos previos para entrenar al programa si no queremos que el programa nos agrupe las cartas estableciendo clases posiblemente no deseadas. Aunque también podría ser interesante si no tenemos ninguna información previa utilizar aprendizaje no supervisado y obtener agrupaciones automáticas.
+		
+		\item Decidir si un determinado índice del mercado de valores subirá o bajará dentro de un	periodo de tiempo fijado.
+		
+		Se podría realizar mediante aprendizaje supervisado a partir de datos de por ejemplo meses anteriores y con esos utilizar un método de regresión para clasificar los datos actuales. También podría ser positivo realizar lo mediante refuerzo  'premiando' aquellos pesos que hayan dado buenos resultados.
+				
+		\item Aprender un algoritmo que permita a un robot rodear un obstáculo.
+		
+		La mejor opción sería mediante aprendizaje por refuerzo, guiar a robot en su tarea de rodear un obstáculo reforzando aquellas acciones que sean positivas.
+	\end{enumerate}
+	
+	\item ¿Cuales de los siguientes problemas son más adecuados para una aproximación por aprendizaje y cuales más adecuados para una aproximación por diseño? Justificar la decisión.
+	\begin{enumerate}
+		\item Agrupar los animales vertebrados en mamíferos, reptiles, aves, anfibios y peces.
+		
+		Este problema es más adecuado para una aproximación por diseño, de hecho existen programas por diseño que resuelven este problema.
+		
+		\item Determinar si se debe aplicar una campaña de vacunación contra una enfermedad.
+		Por aprendizaje tomando datos de años anteriores para decidir mediante un modelo de regresión si aplicar la campaña de vacunación.
+		
+		\item Determinar si un correo electrónico es de propaganda o no.
+		
+		Es más adecuado por aprendizaje, ya que un correo utiliza el lenguaje humano una de las cosas más complejas de clasificar, por lo que será mas adecuado entrenar al programa mediante muchos casos correos ya clasificados.
+		
+		\item Determinar el estado de ánimo de una persona a partir de una foto de su cara.
+		
+		Por aprendizaje, el reconocimiento facial en sí ya es un problema difícil que necesita del aprendizaje, no existe una definición rigurosa de lo que es un rostro facial, cada persona tiene unos rasgos únicos totalmente diferentes al de los demás. Si además tenemos que determinar el estado de ánimo a partir de la cara, aún más complejo será el problema.
+		
+		\item Determinar el ciclo óptimo para las luces de los semáforos en un cruce con mucho	tráfico.
+		
+		Este problema sería factible de determinar mediante aprendizaje, aunque posiblemente seriá mejor opción mediante una metaheurística, ya que para el aprendizaje sería difícil obtener el conjunto de datos necesario para el entrenamiento.
+	\end{enumerate}
+	
+	\item Construir un problema de aprendizaje desde datos para un problema de clasificación de	fruta en una explotación agraria que produce mangos, papayas y guayabas. Identificar los	siguientes elementos formales $\mathcal{X , Y, D,}$ \textit{f} del problema. Dar una descripción de los mismos que pueda ser usada por un computador. ¿Considera que en este problema estamos ante un caso de etiquetas con ruido o sin ruido? Justificar las respuestas.
+	
+	\begin{itemize}
+		\item $\mathcal{X}$: espacio d-dimensional donde cada coordenada corresponde a una característica de las frutas a clasificar como podría ser el peso, tamaño, color, forma, etc...
+		\item $\mathcal{Y}$: clases a las que puede pertenecer una fruta, podríamos usar por ejemplo ${1,2,3}$ donde el el 1 podría ser la clase asociada al mango, el 2 a la papaya y el 3 a la guayaba.
+		\item $\mathcal{D}$: Conjunto de parejas características-etiqueta $\mathcal{D} = \{(x_1, f(x1)), ... , (x_n, f(x_n))\}$, donde $f(x_i) = y_i \in \mathcal{Y}$ y que servirá de entrenamiento.
+		\item \textit{f}: es la función objetivo cuyo dominio es $\mathcal{X}$ y toma valores en $\mathcal{Y}$. $f: \mathcal{X} \rightarrow \mathcal{Y}$
+	\end{itemize}
+	
+	Considero que pueden tener ruido ya que puede haber equivocaciones en la medida de las características ya sea por error humano o por inexactitud de precisión en la medida por ejemplo al tomar el peso de la fruta y además más aún teniendo en cuenta de que las frutas tienen características en las que son muy parecidas como puede ser el peso o el tamaño. 
+	
+	\item Sea X una matriz de números reales de dimensiones $N × d$, $N > d$. Sea $X = UDV^T$ su
+	descomposición en valores singulares (SVD). Calcular la SVD de $X^TX$ y $XX^T$ en función de
+	la SVD de X. Identifique dos propiedades de estás nuevas matrices que no tiene X?. ¿Qué
+	valor representa la suma de la diagonal principal de cada una de las matrices producto?\\
+	
+	\textbf{Solución:}
+	\begin{equation*}
+		X^TX = (UDV^T)^T(UDV^T) = VD^TU^TUDV^T
+	\end{equation*}
+	Como $U$ es ortogonal se tiene que $UU^T = I$ donde $I$ es la matriz identidad, luego tenemos:
+	\begin{equation*}
+		X^TX = VD^TU^TUDV^T = VD^TDV^T = VD_1V^{-1}
+	\end{equation*}
+	Donde $D_1 = D^TD$, es una matriz diagonal, y $VD_1V^{-1}$ es la descomposición en valores singulares de $X^TX$. 
+	
+	\begin{equation*}
+		XX^T = (UDV^T)(UDV^T)^T = UDV^TVD^TU^T = UDD^TU^T = UD_1U^{-1}
+	\end{equation*}
+	$UD_1U^{-1}$ es la descomposición en valores singulares de $XX^T$.\\
+	
+	Una propiedad que vemos directamente de $X^TX$ y $XX^T$ es que son diagonalizables ortogonalmente. También vemos que son matrices cuadradas simétricas.\\
+	
+	La traza de $X^TX$ y $XX^T$ tiene el mismo valor. La suma de una corresponde a la raíz cuadrada del módulo de las columnas de $X$ y la de la otra a la suma de la raíz cuadrada del módulo de las filas de de $X$. 
+	\item Sean \textbf{x} y \textbf{y} dos vectores de características de dimensión $M × 1$. La expresión
+	\begin{equation*}
+		\mathrm{cov}(\textbf{x},\textbf{y}) = \frac{1}{M}\sum_{i=1}^{M}(x_i-\bar{x})(y_i-\bar{y})
+	\end{equation*} 
+	define la covarianza entre dichos vectores, donde $\bar{z}$ representa el valor medio de los elementos de \textbf{z}. Considere ahora una matriz X cuyas columnas representan vectores de características. La matriz de covarianzas asociada a la matriz $\mathrm{X} = (\textbf{x}_1, \textbf{x}_2, \cdots, \textbf{x}_N)$ es el conjunto de covarianzas definidas por cada dos de sus vectores columnas. Es decir, 
+	\begin{equation*}
+		\mathrm{cov(X)} = \left(\begin{matrix}
+		\mathrm{cov}(\textbf{x}_1,\textbf{x}_1)& \mathrm{cov}(\textbf{x}_1,\textbf{x}_2) & \cdots & \mathrm{cov}(\textbf{x}_1,\textbf{x}_N) \\ 
+		\mathrm{cov}(\textbf{x}_2,\textbf{x}_1)& \mathrm{cov}(\textbf{x}_2,\textbf{x}_2) & \cdots & \mathrm{cov}(\textbf{x}_2,\textbf{x}_N) \\ 
+		\cdots& \cdots &\cdots  & \cdots \\ 
+		\mathrm{cov}(\textbf{x}_N,\textbf{x}_1)& \mathrm{cov}(\textbf{x}_N,\textbf{x}_2) & \cdots & \mathrm{cov}(\textbf{x}_N,\textbf{x}_N)
+		\end{matrix}\right)
+	\end{equation*}
+	Sea $1^T_M = (1,1,\cdots,1)$ un vector $M \times 1$ de unos. Mostrar que representan las siguientes expresiones
+	\begin{enumerate}
+		\item $E1 = 11^TX$
+		\item $E2 = (X-\frac{1}{M}E1)^T(X-\frac{1}{M}E1)$
+	\end{enumerate}
+	
+	\textbf{Solución:}
+	\begin{enumerate}
+		\item $E1 = 11^TX$
+		\begin{equation*}
+			E1 = \left(\begin{matrix}
+			1 & 1 & \cdots & 1\\
+			1 & 1 & \cdots & 1\\
+			\cdots & \cdots & \cdots & \cdots\\
+			1 & 1 & \cdots & 1
+			\end{matrix}\right) \left(\begin{matrix}
+			x_{11} & x_{21} & \cdots & x_{N1}\\
+			x_{12} & x_{22} & \cdots & x_{N2}\\
+			\cdots & \cdots & \cdots & \cdots\\
+			x_{1M} & x_{2M} & \cdots & x_{NM}\\
+			\end{matrix}\right) =  \left(\begin{matrix}
+			\sum\limits_{i=1}^{M}x_{1i} & \sum\limits_{i=1}^{M}x_{2i} & \cdots & \sum\limits_{i=1}^{M}x_{Ni}\\
+			\sum\limits_{i=1}^{M}x_{1i} & \sum\limits_{i=1}^{M}x_{2i} & \cdots & \sum\limits_{i=1}^{M}x_{Ni}\\
+			\cdots & \cdots & \cdots & \cdots\\
+			\sum\limits_{i=1}^{M}x_{1i} & \sum\limits_{i=1}^{M}x_{2i} & \cdots & \sum\limits_{i=1}^{M}x_{Ni}
+			\end{matrix}\right)
+		\end{equation*}
+	
+		\item $E2 = (X-\frac{1}{M}E1)^T(X-\frac{1}{M}E1)$
+		
+		\begin{equation*}
+			(X-\frac{1}{M}E1) = \left(\begin{matrix}
+			x_{11} & x_{21} & \cdots & x_{N1}\\
+			x_{12} & x_{22} & \cdots & x_{N2}\\
+			\cdots & \cdots & \cdots & \cdots\\
+			x_{1M} & x_{2M} & \cdots & x_{NM}\\
+			\end{matrix}\right) - \left(\begin{matrix}
+			\dfrac{1}{M}\sum\limits_{i=1}^{M}x_{1i} & \dfrac{1}{M}\sum\limits_{i=1}^{M}x_{2i} & \cdots & \dfrac{1}{M}\sum\limits_{i=1}^{M}x_{Ni}\\
+			\dfrac{1}{M}\sum\limits_{i=1}^{M}x_{1i} & \dfrac{1}{M}\sum\limits_{i=1}^{M}x_{2i} & \cdots & \dfrac{1}{M}\sum\limits_{i=1}^{M}x_{Ni}\\
+			\cdots & \cdots & \cdots & \cdots\\
+			\dfrac{1}{M}\sum\limits_{i=1}^{M}x_{1i} & \dfrac{1}{M}\sum\limits_{i=1}^{M}x_{2i} & \cdots & \dfrac{1}{M}\sum\limits_{i=1}^{M}x_{Ni}
+			\end{matrix}\right) = 
+		\end{equation*}
+		
+		\begin{equation*}
+			 = \left(\begin{matrix}
+			x_{11} & x_{21} & \cdots & x_{N1}\\
+			x_{12} & x_{22} & \cdots & x_{N2}\\
+			\cdots & \cdots & \cdots & \cdots\\
+			x_{1M} & x_{2M} & \cdots & x_{NM}\\
+			\end{matrix}\right) - \left(\begin{matrix}
+			\bar{x}_1 & \bar{x}_2 & \cdots & \bar{x}_N \\
+			\bar{x}_1 & \bar{x}_2 & \cdots & \bar{x}_N \\
+			\cdots & \cdots & \cdots & \cdots\\
+			\bar{x}_1 & \bar{x}_2 & \cdots & \bar{x}_N
+			\end{matrix}\right) = \left(\begin{matrix}
+			x_{11} - \bar{x}_1 & x_{21} - \bar{x}_2 & \cdots & x_{N1} - \bar{x}_N\\
+			x_{12} - \bar{x}_1 & x_{22} - \bar{x}_2 & \cdots & x_{N2} - \bar{x}_N\\
+			\cdots & \cdots & \cdots & \cdots\\
+			x_{1M} - \bar{x}_1 & x_{2M} - \bar{x}_2 & \cdots & x_{NM} - \bar{x}_N\\
+			\end{matrix}\right)
+		\end{equation*}
+		
+		\begin{equation*}
+			E2 = \left(\begin{matrix}
+			x_{11} - \bar{x}_1 & x_{12} - \bar{x}_1 & \cdots & x_{1M} - \bar{x}_1\\
+			x_{21} - \bar{x}_2 & x_{22} - \bar{x}_2 & \cdots & x_{2M} - \bar{x}_2\\
+			\cdots & \cdots & \cdots & \cdots\\
+			x_{N1} - \bar{x}_N & x_{N2} - \bar{x}_N & \cdots & x_{NM} - \bar{x}_N\\
+			\end{matrix}\right)\left(\begin{matrix}
+			x_{11} - \bar{x}_1 & x_{21} - \bar{x}_2 & \cdots & x_{N1} - \bar{x}_N\\
+			x_{12} - \bar{x}_1 & x_{22} - \bar{x}_2 & \cdots & x_{N2} - \bar{x}_N\\
+			\cdots & \cdots & \cdots & \cdots\\
+			x_{1M} - \bar{x}_1 & x_{2M} - \bar{x}_2 & \cdots & x_{NM} - \bar{x}_N\\
+			\end{matrix}\right) = 
+		\end{equation*}
+		\begin{equation*}
+			= \left(\begin{matrix}
+			\sum\limits_{i=1}^{M}(x_{1i}-\bar{x}_1)(x_{1i}-\bar{x}_1) & \sum\limits_{i=1}^{M}(x_{1i}-\bar{x}_1)(x_{2i}-\bar{x}_2) & \cdots & \sum\limits_{i=1}^{M}(x_{1i}-\bar{x}_1)(x_{Ni}-\bar{x}_N)\\
+			\sum\limits_{i=1}^{M}(x_{2i}-\bar{x}_2)(x_{1i}-\bar{x}_1) & \sum\limits_{i=1}^{M}(x_{2i}-\bar{x}_2)(x_{2i}-\bar{x}_2) & \cdots & \sum\limits_{i=1}^{M}(x_{2i}-\bar{x}_2)(x_{Ni}-\bar{x}_N)\\
+			\cdots & \cdots & \cdots & \cdots\\
+			\sum\limits_{i=1}^{M}(x_{Ni}-\bar{x}_N)(x_{1i}-\bar{x}_1) & \sum\limits_{i=1}^{M}(x_{Ni}-\bar{x}_N)(x_{2i}-\bar{x}_2) & \cdots & \sum\limits_{i=1}^{M}(x_{Ni}-\bar{x}_N)(x_{Ni}-\bar{x}_N)\\
+			\end{matrix}\right)
+		\end{equation*}
+		
+		\begin{equation*}
+			\left(\begin{matrix}
+			M\cdot\mathrm{cov}(\textbf{x}_1,\textbf{x}_1)& M\cdot\mathrm{cov}(\textbf{x}_1,\textbf{x}_2) & \cdots & M\cdot\mathrm{cov}(\textbf{x}_1,\textbf{x}_N) \\ 
+			M\cdot\mathrm{cov}(\textbf{x}_2,\textbf{x}_1)& M\cdot\mathrm{cov}(\textbf{x}_2,\textbf{x}_2) & \cdots & M\cdot\mathrm{cov}(\textbf{x}_2,\textbf{x}_N) \\ 
+			\cdots& \cdots &\cdots  & \cdots \\ 
+			M\cdot\mathrm{cov}(\textbf{x}_N,\textbf{x}_1)& M\cdot\mathrm{cov}(\textbf{x}_N,\textbf{x}_2) & \cdots & M\cdot\mathrm{cov}(\textbf{x}_N,\textbf{x}_N)
+			\end{matrix}\right) = M \cdot \mathrm{cov(X)}
+		\end{equation*}\textbf{\\}
+		
+		Luego tenemos que: $E_2 = M \cdot \mathrm{cov(X)}$\\
+	\end{enumerate}
+	
+	\item Considerar la matriz \textbf{hat} definida en regresión, $\mathrm{H = X(X^TX)^{-1}X^T}$, donde X es una matriz $N \times (d+1)$, $X^TX$ es invertible.
+	\begin{enumerate}
+		\item Mostrar que H es simétrica.\\	
+			
+		\textbf{Solución:} Para ver que $H$ es simétrica tenemos que comprobar si $H = H^T$. Para ello calculemos $H^T$.\\
+		\begin{eqnarray}
+			\nonumber H^T & = & (X(X^TX)^{-1}X^T)^T = (X^T)^T((X^TX)^{-1})^T X^T = \\ 
+			\nonumber & = & X((X^TX)^T)^{-1}X^T = X(X^TX)^{-1}X^T = H
+		\end{eqnarray}
+		Luego queda demostrado que H es simétrica.\\
+		
+		\item Mostrar que es idempotente $H^2 = H$\\	
+		
+		\textbf{Solución:} 
+		\begin{eqnarray}
+			\nonumber H^2 & = & (X(X^TX)^{-1}X^T)^2 = X(X^TX)^{-1}X^TX(X^TX)^{-1}X^T = \\
+			\nonumber & = & X(X^TX)^{-1}(X^TX)(X^TX)^{-1}X^T = X(X^TX)^{-1}X^T = H
+		\end{eqnarray}
+		
+		\item ¿Qué representa la matriz H en un modelo de regresión?\\
+		Representa a a matriz de transformación del vector de datos observados en un vector de estimaciones y define los pesos de las etiquetas de aprendizaje usando la matriz $X$.
+	\end{enumerate}
+	
+	\item La regla de adaptación de los pesos del Perceptron $(\textbf{w}_{new} = \textbf{w}_{old} + y\textbf{x})$ tiene la interesante
+	propiedad de que los mueve en la dirección adecuada para clasificar \textbf{x} de forma correcta. Suponga el vector de pesos \textbf{w} de un modelo y un dato $\textbf{x}(t)$ mal clasificado respecto de dicho modelo. Probar que la regla de adaptación de pesos siempre produce un movimiento
+	en la dirección correcta para clasificar bien $\textbf{x}(t)$.
+	
+	$(\textbf{w}_{new} = \textbf{w}_{old} + y\textbf{x})$ $\Rightarrow$ $\textbf{x} \cdot \textbf{w}_{new} = \textbf{x} \cdot \textbf{w}_old + \textbf{x} \cdot y\textbf{x} = \textbf{x} \cdot \textbf{w}_{old} +  y(\textbf{x} \cdot\textbf{x})$
+	
+	\begin{itemize}
+		\item Si $\textbf{x}(t)$ se clasificó correctamente, entonces el algoritmo no aplica la regla de actualización, por lo que nada cambia.
+		\item Si $\textbf{x}(t)$ se clasificó incorrectamente como negativo, entonces $y=1$, y se desplaza hacia el lugar correcto.
+		\item Si $\textbf{x}(t)$ se clasificó incorrectamente como positivo, entonces $y=-1$, y se vuelve a desplazar hacia el lugar correcto.
+	\end{itemize}
+	\item Sea un problema probabilistico de clasificación binaria cuyas etiquetas son \{0,1\}, es decir
+	P(Y = 1) = $h(x)$ y P(Y = 0) = $1 - h(x)$
+	\begin{enumerate}
+		\item Dar una expresión para P(Y) que sea válida tanto para Y=1 como para Y=0.
+		\begin{equation*}
+			P(Y) = h(x)^y(1-h(x))^{1-y}
+		\end{equation*}
+		\item Considere una muestra N v.a. independientes. Escribir la función de Máxima Verosimilitud para dicha muestra.
+		\begin{equation*}
+			L(Y | w_1, ... w_N) = \prod_{i=1}^{N} h(x_n)^{y_n} \prod_{i=1}^{N} (1-h(x_n))^{1-y_n}
+		\end{equation*}
+		\item Mostrar que la función que maximiza la verosimilitud de la muestra es la misma que minimiza
+		\begin{equation*}
+			E_{in}(\textbf{w}) = \sum_{n=1}^{N}[y_n=1]\ln\dfrac{1}{h(x_n)}+[y_n = 0]\ln\dfrac{1}{1-h(x_n)}
+		\end{equation*}
+		donde $[\cdot]$ vale 1 ó 0 según que sea verdad o falso respectivamente la expresión en su interior.
+		
+		Calculamos el menos logaritmo de la verosimilitud:
+		\begin{eqnarray}
+			\nonumber -\ln(\prod_{n=1}^{N} h(x_n)^{y_n} \prod_{n=1}^{N} (1-h(x_n))^{1-y_n}) & = & -\sum_{n=1}^{N}y_n\ln(h(x_n)) - \sum_{n=1}^{N}(1-y_n)\ln(1-h(x_n)) = \\
+			\nonumber & = & \sum_{n=1}^{N}y_n\ln\left(\frac{1}{h(x_n)}\right) + \sum_{n=1}^{N}(1-y_n)\ln\left(\frac{1}{1-h(x_n)}\right)
+		\end{eqnarray}
+		
+		Basta darse cuenta de que como el logaritmo es una función monótona estrictamente creciente la función que maximiza la verosimilitud es la misma que maximiza el logaritmo de la verosimilitud. Y por último ver que la función que maximiza el logaritmo de la verosimilitud es la misma que minimiza lo anterior si lo multiplicamos por -1, y dicha expresión es la dada en el enunciado.
+		\item Para el caso $h(x) = \sigma(\textbf{w}^T\textbf{x})$ mostrar que minimizar el error de la muestra en el
+		apartado anterior es equivalente a minimizar el error muestral
+		\begin{equation*}
+			E_{in}(\textbf{w}) = \dfrac{1}{N}\sum_{n=1}^{N}\ln\left(1+e^{-y_n\textbf{w}^T\textbf{x}_n}\right)
+		\end{equation*}
+		
+		\begin{equation*}
+			\ln\left(\frac{1}{\sigma(\textbf{w}^T\textbf{x}_n)}\right) = -\ln\left(\frac{e^{\textbf{w}^T\textbf{x}_n}}{1+e^{\textbf{w}^T\textbf{x}_n}}\right) = \ln(1+e^{\textbf{w}^T\textbf{x}_n}) - \textbf{w}^T\textbf{x}_n
+		\end{equation*}
+		\begin{equation*}
+			\ln\left(\frac{1}{1-\sigma(\textbf{w}^T\textbf{x}_n)}\right) = -\ln\left(\frac{1}{1+e^{\textbf{w}^T\textbf{x}_n}}\right) = \ln(1+e^{\textbf{w}^T\textbf{x}_n})
+		\end{equation*}
+		
+		\begin{equation*}
+		E_{in}(\textbf{w}) = \sum_{n=1}^{N}[y_n=1]\ln\dfrac{1}{\sigma(\textbf{w}^T\textbf{x}_n)}+[y_n = 0]\ln\dfrac{1}{1-\sigma(\textbf{w}^T\textbf{x}_n)} = \sum_{n=1}^{N} \ln(1+e^{\textbf{w}^T\textbf{x}_n}) - \sum_{n=1}^{N}[y_n=1]\textbf{w}^T\textbf{x}_n
+		\end{equation*}
+	\end{enumerate}
+	
+	\item Mostrar que en regresión logística se verifica:
+	\begin{equation*}
+		\nabla E_{in}(\textbf{w}) = -\dfrac{1}{N}\sum_{n=1}^{N}\dfrac{y_n\textbf{x}_n}{1+e^{y_n\textbf{w}^T\textbf{x}_n}} = \dfrac{1}{N}\sum_{n=1}^{N}-y_n\textbf{x}_n\sigma(-y_n\textbf{w}^T\textbf{x}_n)
+	\end{equation*}
+	Argumentar sobre si un ejemplo mal clasificado contribuye al gradiente más que un ejemplo bien clasificado.
+	
+	\begin{equation*}
+	\nabla E_{in}(\textbf{w}) = \frac{\partial}{\partial \textbf{w}}\left(\frac{1}{N}\sum_{n=1}^{N}\ln(1+e^{-y_n\textbf{w}^T\textbf{x}_n})\right) = \frac{1}{N}\sum_{n=1}^{N}-y_n\textbf{x}_n\frac{e^{-y_n\textbf{w}^T\textbf{x}_n}}{1+e^{-y_n\textbf{w}^T\textbf{x}_n}}
+	\end{equation*}
+	Multiplicando en la fracción que aparece en la última sumatoria por $e^{y_n\textbf{w}^T\textbf{x}_n}$ arriba y abajo obtenemos la primera igualdad:
+	\begin{equation*}
+	\nabla E_{in}(\textbf{w}) = \frac{1}{N}\sum_{n=1}^{N}-y_n\textbf{x}_n\frac{e^{-y_n\textbf{w}^T\textbf{x}_n}}{1+e^{-y_n\textbf{w}^T\textbf{x}_n}} =  -\frac{1}{N}\sum_{n=1}^{N}\frac{y_n\textbf{x}_n}{1+e^{y_n\textbf{w}^T\textbf{x}_n}}
+	\end{equation*}
+	La segunda igualdad es evidente teniendo en cuenta que:
+	\begin{equation*}
+		\sigma(-y_n\textbf{w}^T\textbf{x}_n) = \frac{e^{-y_n\textbf{w}^T\textbf{x}_n}}{1+e^{-y_n\textbf{w}^T\textbf{x}_n}}
+	\end{equation*}
+	\item Definamos el error en un punto $(x_n , y_n )$ por
+	\begin{equation*}
+		\textbf{e}_n(\textbf{w}) = max(0,-y_n\textbf{w}^T\textbf{x}_n)
+	\end{equation*}
+	Argumentar si con esta función de error el algoritmo PLA puede interpretarse como SGD sobre $\textbf{e}_n$ con tasa de aprendizaje $v = 1$.\\
+	
+	El SGD usa la regla $w_j = w_j - \eta \dfrac{\partial e_n(w)}{\partial w_j}$, como $\eta = 1$ la expresión queda como $w_j = w_j - \dfrac{\partial e_n(w)}{\partial w_j}$.\\
+	
+	En este caso tenemos que $\textbf{e}_n(\textbf{w}) = max(0,-y_n\textbf{w}^T\textbf{x}_n)$, derivamos la expresión $-y_n\textbf{w}^T\textbf{x}_n = -y_n\sum w_ix_{ni}$ a la que voy a llamar $h(w)$ y obtenemos $\dfrac{\partial h(w)}{\partial w_j} = -y_n x_{nj}$. Si x está bien clasificado entonces el $max(0,-y_n\textbf{w}^T\textbf{x}_n) = 0$, luego el SGD se queda como estaba ($w_j = w_j$) al igual que en el perceptron, si x esta mal clasificado $-y_n\textbf{w}^T\textbf{x}_n$ es positivo con lo que quedaría $w_j = w_j + y_n x_{nj}$, y queda comprobado de que en este caso el perceptron y el SGD son iguales.	
+\end{enumerate}	
+
+\begin{enumerate}
+	\item (BONUS) En regresión lineal con ruido en las etiquetas, el error fuera de la muestra
+	para una h dada puede expresarse como
+	\begin{equation*}
+		E_{out}(h) = \mathbb{E}_{x,y}[(h(x)-y)^2] = \int\int(h(x)-y)^2p(x,y)dxdy
+	\end{equation*}
+	\begin{enumerate}
+		\item Desarrollar la expresión y mostrar que
+		\begin{equation*}
+			E_{out}(h) = \int \left(h(x)^2\int p(y|x)dy - 2h(x) \int y\cdot p(y|x)dy + \int y^2 p(y|x)dy\right)p(x)dx
+		\end{equation*}
+		\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.7\linewidth]{imagen1}
+		\label{fig:imagen1}
+		\end{figure}
+		\item El término entre en paréntesis $E_{out}$ corresponde al desarrollo de la expresión
+		\begin{equation*}
+			\int(h(x)-y)^2p(x,y)dy
+		\end{equation*}
+		¿Qué mide este término para una $h$ dada?\\
+		
+		
+		Mide la media de los residuos a cuadrado, es decir a desviación de dicha variable respecto a su media, lo que es conocido como varianza.
+		
+		\item Verificar que si la distribución de probabilidad con la que extraemos las muestras es conocida, entonces la hipótesis óptima $h^*$ que minimiza Eout(h) está dada por
+		\begin{equation*}
+			h^*(x)=\mathbb{E}_y[y|x] = \int y \cdot p(y|x)dy
+		\end{equation*}
+		Si minimiza el Eout ya que el valor que minimiza la varianza es la esperanza. 
+		
+		\item ¿Cuál es el valor de E out (h ? ) ?
+		
+		\item Dar una interpretación, en términos de una muestra de datos, de la definición de la
+		hipótesis óptima.
+		
+	\end{enumerate}
+	
+	\item Una modificación del algoritmo perceptron denominada ADALINE, incorpora en
+	la regla de adaptación una poderación sobre la cantidad de movimiento necesaria. En PLA se
+	aplica $w new = w old +y_n x_n y$ en ADALINE se aplica la regla $w new = w old +n(y_n -w^T x_n )x_n$ .
+\end{enumerate}
+	
+\end{document}
+
+
