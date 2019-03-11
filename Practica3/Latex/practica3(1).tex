@@ -1,0 +1,250 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{subfig}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[left=2.00cm, right=2.00cm, top=2.50cm, bottom=2.50cm]{geometry}
+
+
+%%\title{\textbf{\huge Trabajo 3 \\ Aprendizaje Automático}}
+%%
+%%\author{Francisco Solano López Rodríguez \\ Simón López Vico}
+
+\lstset
+{
+	basicstyle=\small\ttfamily,
+	commentstyle=\color{Gray},
+	keywordstyle=\color{Red},
+	frame=single,
+	language=python,
+	morekeywords={True, False},
+	numbersep=10pt,
+	numberstyle=\footnotesize\color{Gray},
+	showstringspaces=false,
+	stringstyle=\color{Mulberry},
+	tabsize=3,
+}
+
+\begin{document}
+	
+		\begin{titlepage}		
+			\begin{center}
+				\vspace*{1cm}
+				\begin{Large}
+					\textbf{\huge Trabajo 3 - Aprendizaje Automático} \\
+				\end{Large}				
+				\vspace*{1cm}
+				\begin{figure}[htb]
+					\begin{center}
+						\includegraphics[width=10cm]{./img/logo_ugr}
+					\end{center}
+				\end{figure}
+				\rule{140mm}{0.1mm}\\
+				\vspace*{0.5cm}
+				\begin{large}
+					\Large{
+					Francisco Solano López Rodríguez\\
+					Simón López Vico
+					}
+				\end{large}
+				
+				\vspace*{0.5cm}
+				\rule{140mm}{0.1mm}\\
+				\vspace*{1.5cm}
+			\end{center}		
+			
+			\tableofcontents
+		\end{titlepage}
+	
+	\newpage
+	
+\section{Problema de clasificación}
+\begin{enumerate}
+	\item \textbf{Comprender el problema a resolver.}
+		
+	El problema a realizar se basa en el reconocimiento óptico de un conjunto de datos de dígitos manuscritos.
+		
+	La base de datos ha sido realizada por un total de 43 personas, 30 contribuyeron al conjunto de datos \textit{train} y 13 para el conjunto de \textit{test}. 
+		
+	Los mapas de bits de $32\times32$ se dividen en bloques no solapables de $4\times4$ y se cuenta el número de píxeles con valor igual a 1 en cada bloque. Esto genera una matriz de entrada de $8\times8$ donde cada elemento es un entero en el rango $[0, 16]$; esto reduce la dimensionalidad y da invariancia a pequeñas distorsiones.
+		
+	La base de datos sobre la que trabajaremos tiene 5620 instancias, con un total de 64 atributos de tipo entero.\\
+		
+	\item \textbf{Preprocesado los datos: por ejemplo categorización, normalización, etc.}
+	
+	Hemos usado normalización para el prepocesado de los datos, mediante el siguiente código:
+		
+\begin{lstlisting}
+def readData(file_x, file_y):
+	x = np.load(file_x)
+	y = np.load(file_y)	
+	x_ = np.empty(x.shape, np.float64)
+	
+	for i in range(0,x.shape[0]):
+		for j in range(0,x.shape[1]):
+			x_[i][j] = np.float64(1.0*x[i][j]/16.0)
+	
+	return x_, y	
+\end{lstlisting}
+
+	\item \textbf{Selección de clases de funciones a usar.}
+	
+	Para la realización del problema hemos decidido usar regresión logística.\\
+	
+	\item \textbf{Definición de los conjuntos de training, validación y test usados en su caso.}
+	
+	Los conjuntos de training y de test vienen dados en los archivos \texttt{optdigits\_tra\_X.npy, optdigits\_tra\_y.npy} y \texttt{optdigits\_tes\_X.npy, optdigits\_tes\_y.npy} respectivamente.
+	
+	Usaremos validación para evaluar nuestro clasificador y evitar sobreajuste; en concreto, usaremos ``Validación Cruzada'' (\textit{K-fold}).
+	
+	Dicha técnica consiste en separar los datos de train en $K$ conjuntos, escogiendo uno de ellos como datos de prueba y el resto como datos de entrenamiento; estas $K$ particiones será disjuntas con la distribución de etiquetas equilibrada (\textit{Stratified}). Dicho proceso se repite $K$ veces, eligiendo cada vez uno de los subconjuntos como datos test. Para terminar, realizaremos la media de los resultados obtenidos en cada iteración para obtener un único resultado.
+	
+	Vamos a crear varios modelos, cada uno con un $\lambda$ diferente ($\lambda$ inversamente proporcional a nuestro parámetro \texttt{c}), y a validar nuestros datos sobre cada uno de estos modelos, quedándonos con la información del que mejores resultados nos dé. 
+	
+	El código usado para implementar dicha técnica será el siguiente.
+	
+\begin{lstlisting}
+k = 3 # Número de subconjuntos a generar
+kf = StratifiedKFold(n_splits=k) # Inicializamos el K-Fold
+kf.get_n_splits(X_train,y_train) # Separamos los conjuntos de entrenamiento
+
+mejor_C = 0
+mejor_media = 0
+x = []
+y = []
+
+for i in range(-5,5):
+	suma = 0	
+	c = 10**i # El crecimiento de nuestro c será exponencial
+
+	for train_index, test_index in kf.split(X_train,y_train):
+		X_train_, X_test_ = X_train[train_index], X_train[test_index]
+		y_train_, y_test_ = y_train[train_index], y_train[test_index]
+
+	lr = LogisticRegression(C=c) # Aplicamos regresión logística respecto de c
+	lr.fit(X_train_, y_train_)   # Ajustamos el modelo a partir de los datos
+	predictions = lr.predict(X_test_)  # Calculamos error respecto de test
+	suma += lr.score(X_test_, y_test_) # Sumamos el porcentaje de acierto
+
+	media = 1.0*suma/k
+
+	x.append(c)
+	y.append(media)
+
+	# Si mejora el porcentaje de acierto con el nuevo c
+	if media > mejor_media:
+		mejor_media = media
+		mejor_C = c
+
+\end{lstlisting}
+	
+	\item \textbf{Discutir la necesidad de regularización y en su caso la función usada para ello.}
+	
+	
+	
+	\item \textbf{Definir los modelos a usar y estimar sus parámetros e hyperparámetros.}
+	
+	
+	\item \textbf{Selección y ajuste modelo final.}
+	
+	
+	\item \textbf{Discutir la idoneidad de la métrica usada en el ajuste.}
+	
+	
+	\item \textbf{Estimación del error $E_{out}$ del modelo lo más ajustada posible.}
+
+
+	\item \textbf{Discutir y justificar la calidad del modelo encontrado y las razones por las que considera que dicho modelo es un buen ajuste que representa adecuadamente los datos muestrales.}
+	
+	
+	
+\end{enumerate}
+	
+\section{Problema de regresión.}
+\begin{enumerate}
+	\item \textbf{Comprender el problema a resolver.}
+	
+	La base de datos utilizada se llama Airfoil Self-Noise, es un conjunto de datos de la Nasa, obtenidos a partir de una serie de pruebas aerodinámicas y acústicas de secciones de palas de aerodinámica bidimensionales y tridimensionales realizadas en un túnel aerodinámico anecoico.
+	
+	La base de datos consta de 1503 instancias. Las columnas de este conjunto de datos son los siguientes:
+	
+	1. Frecuencia, en hercios.\\
+	2. Ángulo de ataque, en grados.\\
+	3. Longitud del acorde, en metros.\\ 
+	4. Velocidad de flujo libre, en metros por segundo.\\ 
+	5. Espesor de desplazamiento del lado de succión, en metros.\\
+	6. Nivel de presión sonora escalonado, en decibelios.\\
+	
+	De las cuales las 5 primeras corresponden a los atributos y la última a la salida, nuestro objetivo es intentar predecir esta última variable.
+	
+	\item \textbf{Preprocesado los datos: por ejemplo categorización, normalización, etc.}
+	
+	Como nuestros datos no estaban separados en train y test hemos tomado un tercio de ellos para test y los restantes para training. Antes de la separación de los datos estos han sid permutados, ya que observe que la muestra de datos tenía un cierto orden debido a uno de los atributos.
+	
+	\begin{lstlisting}
+# Leemos el conjunto de entrenamiento
+X, y = readData('airfoil_self_noise_npy/airfoil_self_noise_X.npy', 
+'airfoil_self_noise_npy/airfoil_self_noise_y.npy')
+
+# Permutamos los datos antes de separar en train y test
+random_state = check_random_state(0)
+permutation = random_state.permutation(X.shape[0])
+X = X[permutation]
+y = y[permutation]
+
+# Seramos los datos en train y test
+X_train = X[0:2*X.shape[0]//3]
+y_train = y[0:2*y.shape[0]//3]
+X_test = X[2*X.shape[0]//3:X.shape[0]]
+y_test = y[2*y.shape[0]//3:y.shape[0]]
+	\end{lstlisting}
+	
+	Como los datos se mueven en distintos rangos, aquellos que se mueven en valores más altos podrían dominar frente a los otros al realizar la regresión. Debido a ello los datos se han escalado con el siguiente código:
+	
+	\begin{lstlisting}
+min_max_scaler = preprocessing.MinMaxScaler()
+X = min_max_scaler.fit_transform(X)
+	\end{lstlisting}
+	
+	Los datos escalados con el código anterior toman media cero y varianza unitaria.
+	
+	Además se han añadido características polinómicas al problema, cosa que puede venir muy bien debido al bajo número de atributos de los que disponemos.
+	
+	\begin{lstlisting}
+poly = PolynomialFeatures(2)
+X = poly.fit_transform(X)
+	\end{lstlisting}
+	
+	\item \textbf{Selección de clases de funciones a usar.}
+La clase de funciones a usar son las funciones lineales. El modelo que utilizaremos para la regresión es el llamado Lasso.
+	
+	\item \textbf{Definición de los conjuntos de training, validación y test usados en su caso.}
+	
+	
+	\item \textbf{Discutir la necesidad de regularización y en su caso la función usada para ello.}
+	
+	
+	\item \textbf{Definir los modelos a usar y estimar sus parámetros e hyperparámetros.}
+	
+	
+	\item \textbf{Selección y ajuste modelo final.}
+	
+	
+	\item \textbf{Discutir la idoneidad de la métrica usada en el ajuste.}
+	
+	
+	\item \textbf{Estimacion del error E out del modelo lo más ajustada posible.}
+	
+	
+	\item \textbf{Discutir y justificar la calidad del modelo encontrado y las razones por las que considera que dicho modelo es un buen ajuste que representa adecuadamente los datos muestrales.}
+
+\end{enumerate}
+
+\end{document}
+

@@ -1,0 +1,626 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{subfig}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[left=2.00cm, right=2.00cm, top=2.50cm, bottom=2.50cm]{geometry}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.12cm}
+
+
+\title{	 \normalfont \normalsize 
+	\textsc{\textbf{Aprendizaje Automático (2017-2018)} \\ Doble Grado en Ingeniería Informática y Matemáticas \\ Universidad de Granada} \\ [25pt]
+	\huge Proyecto Final: \\ % The assignment title
+	\Large Breast Cancer Wisconsin (Diagnostic) \\
+}
+
+\author{Francisco Solano López Rodríguez \\ Simón López Vico} % Nombre y apellidos
+
+\date{\normalsize\today} % Incluye la fecha actual
+
+
+\lstset
+{
+	basicstyle=\small\ttfamily,
+	commentstyle=\color{Gray},
+	keywordstyle=\color{Red},
+	frame=single,
+	language=python,
+	morekeywords={True, False},
+	numbersep=10pt,
+	numberstyle=\footnotesize\color{Gray},
+	showstringspaces=false,
+	stringstyle=\color{Mulberry},
+	tabsize=3,
+}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Descripción del problema.}
+
+Comencemos este proyecto comentando del problema sobre el que vamos a trabajar y el conjunto de datos que queremos ajustar.
+
+El problema a realizar se basa en el diagnóstico de cáncer de mama a través del ajuste de la información proporcionada por una base de datos.
+	
+Las características de los datos proporcionados para el ajuste han sido calculadas a partir de imágenes digitalizadas de un aspirado con aguja fina (AAF) de una masa mamaria. Dichos atributos describen las propiedades de los núcleos celulares presentes en la imagen.
+	
+Las características relevantes ya han sido seleccionadas mediante una búsqueda exhaustiva en el espacio de 1-4 características y 1-3 planos de separación. 
+	
+Los atributos de nuestro conjunto de datos serán:
+\begin{itemize}
+	\item[1)] Número ID. 
+	\item[2)] Diagnóstico (M=maligno, B=benigno).
+	\item[3-32)] Se calculan diez características de valor real para cada núcleo celular:
+	\begin{itemize}
+		\item Radio (media de las distancias del centro a los puntos del perímetro). 
+		\item Textura (desviación estándar de los valores de la escala de grises).
+		\item Perímetro. 
+		\item Superficie.
+		\item Suavidad (variación local en longitudes de radio).
+		\item Compacidad ($\frac{\textit{perímetro}^2}{\textit{área}-1.0}$).
+		\item Concavidad (gravedad de las partes cóncavas del contorno).
+		\item Puntos cóncavos (número de partes cóncavas del contorno).
+		\item Simetría.
+		\item Dimensión fractal (``aproximación al litoral''$-1$).			
+	\end{itemize}
+\end{itemize}
+
+La media, el error estándar y la media de los tres mayores valores de estas características se han calculado para cada imagen, dando como resultado 30 características.  Por ejemplo, el atributo 3 es el radio medio, el atributo 13 es el error estándar del radio y el atributo 23 la media de los tres mayores valores de radio.
+
+Visualicemos la distribución de los datos respecto de los 10 primeros atributos de dos en dos; escogemos los 10 primeros ya que son los valores que representan la media de cada uno de los atributos.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.4]{img/PLOT_DATA.png}
+	\caption{Gráficas de los diez primeros atributos de nuestra base de datos.}
+\end{figure}
+
+Viendo la gráfica podemos apreciar que existe una relación fuerte de dependencia entre algunas variables, como por ejemplo entre el radio y la superficie o el perímetro, o la concavidad y la compacidad.
+
+En total, dispondremos de 357 instancias benignas y 212 instancias malignas (569 instancias). Como ya se habrá podido observar nos encontramos ante un problema de clasificación binaria. 
+
+\section{Lectura y preprocesado de los datos.}
+
+Una vez entendida la naturaleza de nuestros datos, pasemos al preprocesado de éstos. Para comenzar, leeremos nuestros datos con las siguientes funciones facilitadas por \texttt{numpy}:
+\vspace*{0.2cm}	
+\begin{lstlisting}
+	y = np.genfromtxt('datos/wdbc.data', delimiter=',', usecols=1, dtype=str)
+	X = np.genfromtxt('datos/wdbc.data', delimiter=',', usecols=range(2, 32))
+\end{lstlisting}
+
+De esta manera crearemos dos vectores, donde \texttt{y} contendrá las etiquetas del dataset (M para maligno, B para benigno) y \texttt{X} los atributos de éste. Notar que no guardamos los valores de la columna 0, pues ésta solo contiende el ID de la instancia, irrelevante para nuestro ajuste.
+	
+Llegados a este punto, dejemos claro que usaremos en un primer momento \textbf{regresión logística} para ajustar nuestros datos; y para ajustar dicho modelo, necesitaremos un conjunto de entrenamiento y otro de test.
+
+Dado que solo disponemos de un conjunto de datos sin que estén separado en train y test, nos encargaremos de que una cuarta parte de éstos sean el conjunto test y el resto el conjunto de entrenamiento para el ajuste del modelo. Usaremos el siguiente código:
+
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+	X_train, X_test, y_train, y_test =
+	    train_test_split(X, y, stratify=y, test_size=0.25, random_state = 0)
+\end{lstlisting}	
+	
+Los atributos de la función (perteneciente a \texttt{sklearn}) serán, por orden, los arrays de datos y las etiquetas, \texttt{stratify=y} lo cuál hará que la separación en train y test mantenga la proporción de etiquetas del conjunto original, \texttt{text\_size=0.25}, es decir, un cuarto del total, y \texttt{random\_state=0} que fijará una semilla para la separación aleatoria de los datos.  
+
+Si mostramos por pantalla una instancia de nuestro conjunto de datos obtendremos lo siguiente:
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+X[0] = [1.799e+01 1.038e+01 1.228e+02 1.001e+03 1.184e-01 2.776e-01 3.001e-01
+	    1.471e-01 2.419e-01 7.871e-02 1.095e+00 9.053e-01 8.589e+00 1.534e+02
+	    6.399e-03 4.904e-02 5.373e-02 1.587e-02 3.003e-02 6.193e-03 2.538e+01
+	    1.733e+01 1.846e+02 2.019e+03 1.622e-01 6.656e-01 7.119e-01 2.654e-01
+	    4.601e-01 1.189e-01]
+\end{lstlisting}
+
+Como podemos comprobar, el valor que toman los atributos es muy dispar, están muy esparcidos, teniendo valores entre $10^{-3}$ y $10^3$, por lo que será necesario normalizar el valor de nuestros atributos.
+
+Para ello usaremos la función \texttt{scale(X)} de \texttt{sklearn}, la cual estandariza un conjunto de datos centrándose en la media y en la escala de componentes con varianza unitaria, $\sigma^2=1$.
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+	X_train = preprocessing.scale(X_train)
+	X_test = preprocessing.scale(X_test)
+\end{lstlisting} 
+
+Si se hubiese aplicado la normalización sobre el conjunto de datos completo, sin haberlo separado en train y test, los datos de train tendrían, por decirlo de algún modo, cierta información sobre los datos del test. Debido a esto la hemos realizado tras el separado en train y test.
+
+De esta manera, nuestros datos pasarán a ser de la siguiente forma:
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+X[0] = [1.09706398 -2.07333501  1.26993369  0.9843749   1.56846633  3.28351467
+	    2.65287398  2.53247522  2.21751501  2.25574689  2.48973393 -0.56526506
+	    2.83303087  2.48757756 -0.21400165  1.31686157  0.72402616  0.66081994
+	    1.14875667  0.90708308  1.88668963 -1.35929347  2.30360062  2.00123749
+	    1.30768627  2.61666502  2.10952635  2.29607613  2.75062224  1.93701461]
+\end{lstlisting}	
+
+
+\section{Modelo lineal - Regresión Logística.}
+
+Para empezar, trataremos de ajustar nuestra base de datos mediante un modelo lineal, en concreto mediante Regresión Logística.
+
+Generados ya nuestro conjuntos train y test, es el momento de tratar la validación y regularización de los datos.
+
+Con el conjunto de entrenamiento, usaremos validación y regularización para evaluar nuestro clasificador y calcular \texttt{c} (inversa de la ``\textit{regularization strenght}'' (fuerza de regularización)), evitando así el sobreajuste de nuestro clasificador; en concreto, usaremos Validación Cruzada \textit{K-fold}.
+
+Para comprobar la necesidad de regularización, crearemos varios modelos, cada uno de ellos con un ``\textit{regularization strenght}'' $\lambda=\frac{1}{c^i}$, donde $i$ tomará valores enteros del intervalo $[-7,7]$.
+	
+Para cada conjunto test obtenido mediante la validación cruzada, calcularemos el acierto respecto del ajuste realizado con la variable \texttt{c}, calculando una media de aciertos por cada \texttt{c}. Finalmente, escogeremos el parámetro \texttt{c} que mejores resultados nos haya dado.
+
+La implementación es más sencilla de lo que aparenta; empezaremos creando una variable que contendrá los parámetros que queremos ajustar y los valores que puedan tomar; tras ello, usaremos la función \texttt{GridSearchCV(...)} que creará los modelos para la validación cruzada. Finalmente solo nos quedará ajustar el modelo a partir de los datos, de manera que se asignará automáticamente el valor de \texttt{c} con menor error.
+
+\vspace*{0.2cm}	
+\begin{lstlisting}
+	param_dist = {'C': np.float_power(10, range(-7,7))}
+	lr = GridSearchCV(LogisticRegression(), cv = 10, param_grid=param_dist)
+	
+	# Ajustamos el modelo a partir de los datos
+	lr.fit(X_train, y_train)
+\end{lstlisting}
+	
+Si ajustamos el modelo respecto de nuestros datos (llamando a la función \texttt{fit}), podremos comprobar el valor de \texttt{c}, el cuál será 1.	
+
+Realizados ya los cálculos sobre los datos y los modelos a usar, tenemos que el único parámetro usado ha sido \texttt{c}, el cual ha ido cambiando creando un nuevo modelo de regresión logística. Respecto a los hyperparámetros (parámetro cuyo valor se establece antes de que comience el proceso de aprendizaje), hemos fijado el valor $k=10$, el cual establece el número de subconjuntos a generar mediante la validación cruzada.
+
+Ya tenemos todo lo necesario para realizar nuestros cálculos y determinar el porcentaje de acierto para nuestro modelo. Como modelo final, seleccionaremos la regresión logística con el parámetro \texttt{c} que mejor porcentaje medio nos haya dado en la regularización, es decir, $\texttt{c}=1$. Dicho modelo ya ha sido ajustado anteriormente mediante \texttt{lr.fit(X\_train, y\_train)}.
+
+A continuación, calculemos el porcentaje de acierto para los datos de entrenamiento y los datos de test. Bastará con el siguiente código:
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+	# Calculamos el score con dicho ajuste para test
+	predictions_train = lr.predict(X_train)	
+	score_train = lr.score(X_train, y_train)
+	
+	# Calculamos el score con dicho ajuste para test
+	predictions_test = lr.predict(X_test)	
+	score_test = lr.score(X_test, y_test)
+	
+	print('Mejor C: ', lr.best_params_['C'])
+	print('Valor de acierto con el mejor c sobre el conjunto train: ', score_train)
+	print('Valor de acierto con el mejor c sobre el conjunto test: ', score_test)
+	input("Pulsa enter para continuar.")
+\end{lstlisting}
+
+Tras ejecutar ésto, obtendremos la siguiente salida:
+\vspace*{0.2cm}	
+\begin{verbatim}
+Mejor valor de C:  1.0
+Valor de acierto con el mejor c sobre el conjunto train:  0.9929577464788732
+Valor de acierto con el mejor c sobre el conjunto test:  0.986013986013986
+Pulsa enter para continuar.
+\end{verbatim}
+
+Por tanto, el modelo elegido realiza un buen ajuste de los datos, pues estamos obteniendo un porcentaje de precisión del 98.6\% sobre los datos de test, un valor de acierto bastante alto.
+
+La matriz de confusión obtenida es:
+\begin{equation*}
+	P = 
+	\begin{bmatrix}
+		90 &  0 \\
+		2  & 51
+	\end{bmatrix}
+\end{equation*}
+
+Como podemos ver, el modelo solo ha fallado dos veces, cometiendo dos falsos negativos; así, podemos reiterar que el ajuste calculado es bueno.
+
+Veamos a continuación la curva ROC asociada al modelo. Para calcularla y mostrarla por pantalla, usaremos el siguiente código:
+
+\begin{lstlisting}
+	y_pred_rf = lr.predict_proba(X_test)[:, 1]
+	fpr, tpr, thresholds = roc_curve(y_test, y_pred_rf)  
+	roc_auc = auc(fpr, tpr)
+	
+	plt.figure()
+	plt.plot(fpr, tpr, color='darkorange', label='ROC curve (area = %0.2f)' % roc_auc)
+	plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+	plt.xlim([-0.05, 1.05])
+	plt.ylim([-0.05, 1.05])
+	plt.xlabel('False Positive Rate')
+	plt.ylabel('True Positive Rate')
+	plt.title('Receiver operating characteristic example')
+	plt.legend(loc="lower right")
+	plt.show()
+\end{lstlisting}
+
+Finalmente, la curva generada será:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{img/lr_roc}
+	\caption{Curva ROC del ajuste mediante Regresión Logística.}
+	\label{fig:lr_roc}
+\end{figure}
+
+Como podemos ver, el área formada bajo la curva vale 1, interpretando ésto como que el ajuste del modelo es excelente.
+
+Por tanto, la regresión logística será un buen clasificador sobre nuestro conjunto de datos.\\
+
+
+\section{Modelos no-lineales - Random Forest.}
+
+Para Random Forest se han tomado los datos sin realizar ningún tipo de escalado o modificación sobre estos.
+
+Lo primero que vamos a hacer es utilizar Random Forest para la obtención de las características mas importantes. Para ello, definiremos un clasificador y entrenaremos con el conjunto de datos train.
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+	clf = RandomForestClassifier(random_state=10)
+	clf.fit(X_train, y_train)
+\end{lstlisting}
+
+Ahora obtenemos la importancia de cada característica y mostramos una gráfica con dichas características ordenadas por importancia.
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+	importances = clf.feature_importances_
+	std = np.std([tree.feature_importances_ for tree in clf.estimators_], axis=0)
+	indices = np.argsort(importances)[::-1]
+	
+	plt.figure()
+	plt.title("Feature importances")
+	plt.bar(range(X.shape[1]), importances[indices],
+	color="r", yerr=std[indices], align="center")
+	plt.xticks(range(X.shape[1]), indices)
+	plt.xlim([-1, X.shape[1]])
+	plt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{img/importancia}
+	\caption{Importancia de las características}
+	\label{fig:importancia}
+\end{figure}
+
+Una vez obtenida la importancia de cada característica, nos vamos a quedar con aquellas que tengan un valor más alto.
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+	features_to_use = indices[0:14]
+	
+	X_train = X_train[:,features_to_use]
+	X_test = X_test[:,features_to_use]
+\end{lstlisting}
+
+Una vez hecho esto, pasamos a la obtención del modelo de Random Forest. Para ello tomaremos un modelo en el que vamos a fijar el número de características a $\sqrt{n}$, donde $n$ es el número de características. Esto se consigue con el parámetro \texttt{max\_features = 'sqrt'}. También fijaremos el valor de la semilla, \texttt{random\_state=10}.
+
+\vspace*{0.2cm}	
+\begin{lstlisting}
+	fit_rf = RandomForestClassifier(max_features = 'sqrt', random_state=10)
+\end{lstlisting}
+
+El parámetro que vamos a ajustar en Random Forest es \texttt{n\_estimators}, que se corresponde con el número de arboles en el \textit{forest} generado. Para ello vamos a hacer uso de \texttt{GridSearchCV(...)} igual que hicimos en con el modelo de regresión logística.
+
+\vspace*{0.2cm}	
+\begin{lstlisting}
+	estimators = range(10,200,10)
+	param_dist = {'n_estimators': estimators}
+	clf= GridSearchCV(fit_rf, cv = 10, param_grid=param_dist, n_jobs = 3)
+\end{lstlisting}
+
+Como podemos ver, el número de árboles lo hemos modificado desde 10 hasta 200, realizando saltos de 10. 
+En el \texttt{GridSearchCV(...)} el parámetro \texttt{cv=10} indica que se va a hacer una validación cruzada con $K=10$; y el parámetro \texttt{n\_jobs=3}, que se ejecutarán en paralelo 3 tareas.
+
+Tras esto ajustamos el modelo con los datos de entrenamiento.
+\vspace*{0.2cm}	
+
+\begin{lstlisting}
+	clf.fit(X_train, y_train)
+\end{lstlisting}
+
+Después del ajuste, obtenemos los scores obtenidos de media en las validaciones cruzadas, para cada valor del parámetro \texttt{n\_estimators}, para representar la variación del error de test al aumentar el número de árboles.
+
+\vspace*{0.2cm}	
+\begin{lstlisting}
+	scores = clf.cv_results_['mean_test_score']
+	plt.plot(estimators, 1-scores)
+	plt.xlabel('num tree')
+	plt.ylabel('test error')
+	plt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{img/ntrees}
+	\caption{Variación del score respecto \texttt{n\_estimators}.}
+	\label{fig:ntrees}
+\end{figure}
+
+Vemos ahora cual ha sido el mejor valor del parámetro:
+
+\vspace*{0.2cm}	
+\begin{lstlisting}
+	best_param = clf.best_params_['n_estimators']
+	print ("Mejor valor para n_estimators: ", best_param)
+\end{lstlisting}
+
+La salida obtenida es: \texttt{Mejor valor para n\_estimators:  20}.
+
+Finalmente, comprobemos la precisión obtenida en el train y en el test.
+
+\vspace*{0.2cm}	
+\begin{lstlisting}
+	predictions_train = clf.predict(X_train)
+	predictions = clf.predict(X_test)
+	
+	print ("Train Accuracy :: ", accuracy_score(y_train, predictions_train))
+	print ("Test Accuracy  :: ", accuracy_score(y_test, predictions))
+	print (" Confusion matrix \n", confusion_matrix(y_test, predictions))
+\end{lstlisting}
+
+La salida obtenida es:
+
+\texttt{Train Accuracy ::  0.9976525821596244\\
+	Test Accuracy  ::  0.986013986013986\\
+	Confusion matrix \\
+	$[[90 \ \ 0]$\\
+	$[ 2  \ \  51]]$}
+
+Los valores de precisión obtenidos han sido muy altos, de hecho casi perfectos. En la matriz de confusión podemos apreciar que tan solo ha cometido dos errores de falsos negativos, acertando todas las demás predicciones. Comentar también que el error ha sido en un falso negativo, es decir diagnosticar a una persona con tumpo maligno cuando en realidad era benigno, este error es menos grave que el otro que se podría haber cometido, el de diagnosticar como benigno cuando en realidad era maligno.
+
+Por último representemos la curva ROC e interpretemos los resultados. La curva ROC obtenida es la siguiente. Como podemos ver el área bajo la curva es de 0.99, este valor indica que el test ha sido excelente, por lo que podemos considerar que el modelo obtenido es bastante bueno.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{img/rf_roc}
+	\caption{Curva ROC del ajuste mediante Random Forest.}
+	\label{fig:rf_roc}
+\end{figure}
+
+\section{Modelos no-lineales - Support Vector Machine.}
+
+Hablemos a continuación sobre el ajuste mediante SVM; en concreto, usaremos un núcleo polinomial.
+
+SVM se encargará de separar los datos mediante un hiperplano de manera que la distancia de los puntos más cercanos a éste (vectores de soporte) sea óptima, es decir, la más grande posible.
+
+Para el ajuste mediante este clasificador tomaremos los datos con el mismo escalado que hemos tratado en el apartado \textit{Lectura y preprocesado de los datos}. Además, usaremos validación y regularización como en los anteriores apartados.
+
+Supuesto que ya hemos leído, preprocesado y realizados todos los cálculos sobre nuestros datos previos al ajuste, comenzamos con la Validación Cruzada \textit{K-fold}. Esta vez, en vez de aplicar regularización sobre un único parámetro, la aplicaremos sobre dos; en concreto sobre el parámetro \texttt{C}, similar al ajustado en Regresión logística, y el parámetro \texttt{degree}, el cual denotará el grado de la función polinómica del kernel de SVM. Utilizaremos 10 \textit{folds}.
+
+Para ello, usaremos el siguiente código:
+
+\begin{lstlisting}
+	# Validacion y regularizacion
+	c_range = np.float_power(10, range(-7,7))
+	degree_range = list(range(1,5))
+	param = dict(degree=degree_range, C=c_range)
+	svmachine=svm.SVC(kernel='poly', probability=True)
+	clf = GridSearchCV(svmachine, cv = 10, param_grid=param)
+\end{lstlisting}
+
+Podemos comprobar que el valor de \texttt{C} oscilará entre $10^{-7}$ y $10^7$, mientras que el polinimio será de grado entre 1 y 4. Además, establecemos el kernel polinomial en la llamada a SVC con \texttt{kernel='poly'}, y establecemos \texttt{probability=True} para poder representar más tarde la curva ROC.
+
+Tras esto, ajustamos el modelo sobre nuestros datos de entrenamiento y nos dispondremos a representar la variación de la precisión de nuestro modelo respecto del parámetro \texttt{C} y el grado del polinomio. El siguiente código será el encargado.
+
+\begin{lstlisting}
+	# Ajustamos el modelo a partir de los datos
+	clf.fit(X_train, y_train)
+	
+	# Dibujamos las gráficas en función de C y degree
+	params = clf.cv_results_['params']
+	scores = clf.cv_results_['mean_test_score']
+	
+	plt.plot(c_range, scores[0::4], 'r-', label='grado 1')
+	plt.plot(c_range, scores[1::4], 'b-', label='grado 2')
+	plt.plot(c_range, scores[2::4], 'g-', label='grado 3')
+	plt.plot(c_range, scores[3::4], 'y-', label='grado 4')
+	plt.xscale('log')
+	plt.xlabel('C')
+	plt.ylabel('score')
+	plt.legend()
+	plt.show()
+\end{lstlisting}
+
+El resultado obtenido tras la ejecución de estas líneas será el que mostramos a continuación:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.7]{img/svm_C}
+	\caption{Variación de la precisión del modelo respecto del valor de \texttt{C}.}
+\end{figure}
+
+Es fácil observar que el grado óptimo para el núcleo polinómico será 1 y que a mayor grado mayor sobreajuste; por otra parte, vemos que el valor máximo de precisión se alcanzará aproximadamente en \texttt{C=10}. Recordar que el modelo lineal de Regresión logística ajustaba muy bien nuestros datos, por lo que es entendible que el grado óptimo para el núcleo de SVM sea 1.
+
+Una vez realizada la validación y regularización, pasemos al ajuste final del modelo. Imprimiremos por pantalla los valores óptimos para \texttt{C} y \texttt{degree}, así como el número de vectores de soporte para cada clase de nuestro conjunto de datos. Por último, calcularemos la precisión con los datos de entrenamiento y los datos test.
+
+\begin{lstlisting}
+	# Calculamos el score con dicho ajuste para test
+	predictions_train = clf.predict(X_train)	
+	score_train = clf.score(X_train, y_train)
+		
+	# Calculamos el score con dicho ajuste para test
+	predictions_test = clf.predict(X_test)
+	score_test = clf.score(X_test, y_test)
+	
+	print('\nMejor valor de C y mejor grado: ', clf.best_params_)
+	print('Número de vectores de soporte para cada clase: ', clf.best_estimator_.n_support_)
+	print('Valor de acierto con el mejor c sobre el conjunto train: ', score_train)
+	print('Valor de acierto con el mejor c sobre el conjunto test: ', score_test)
+	input("Pulsa enter para continuar.")
+\end{lstlisting}
+
+Dicho código devolverá la siguiente información:
+
+\begin{verbatim}
+Mejor valor de C y mejor grado:  {'C': 10.0, 'degree': 1}
+Número de vectores de soporte para cada clase:  [19 21]
+Valor de acierto con el mejor c sobre el conjunto train:  0.9906103286384976
+Valor de acierto con el mejor c sobre el conjunto test:  0.986013986013986
+Pulsa enter para continuar.
+\end{verbatim}
+
+Por tanto, hemos obtenido un gran ajuste, con prácticamente la misma precisión que los anteriores modelos, un 98.6\%.
+
+La matriz de confusión asociada a este clasificador es exactamente la misma que en los dos modelos anteriores, únicamente con dos falsos negativos. Respecto a la curva ROC, tenemos la siguiente gráfica:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.6]{img/svm_roc}
+	\caption{Curva ROC del ajuste mediante SVM.}
+\end{figure}
+
+
+\section{Modelos no-lineales - Redes Neuronales}
+
+Procedemos igual que siempre, leyendo los datos y modificando las etiquetas para pasarlas a valores numéricos. A continuación separamos los datos en train y test.
+\vspace*{0.2cm}
+\begin{lstlisting}
+# Leemos los datos
+y = np.genfromtxt('datos/wdbc.data', delimiter=',', usecols=1, dtype=str)
+X = np.genfromtxt('datos/wdbc.data', delimiter=',', usecols=range(2, 32))
+
+le = preprocessing.LabelEncoder()
+y = le.fit(y).transform(y)
+
+# Separamos los datos en train y test
+X_train, X_test, y_train, y_test = train_test_split(X, y,
+ stratify=y, test_size=0.25, random_state = 0)
+\end{lstlisting}
+
+Perceptron multicapa es sensible al escalado de funciones. Hemos decidido estandarizar los datos para que tengan la media 0 y la varianza 1. Esto se ha hecho mediante StandardScaler.
+\vspace*{0.2cm}
+
+\begin{lstlisting}
+X_train = StandardScaler().fit_transform(X_train)
+X_test = StandardScaler().fit_transform(X_test) 
+\end{lstlisting}
+
+Lo primero que vamos a hacer es elegir el número de capas ocultas de la red neuronal y el número de unidades por capa. El número de capas va a variar entre 1 y 3, y el número unidades por capa entre 0 y 50. Como el número de posibles modelos entre estos rangos es muy alto, vamos a considerar que todas las capas tienen el mismo número de capas, por ejemplo una red con 3 capas ocultas y 10 unidades en cada capa. Los modelos de perceptrones multicapa los vamos a definir con \texttt{MLPClassifier} y el parámetro que vamos a modificar \texttt{hidden\_layer\_sizes}. El parámetro \texttt{ hidden\_layer\_sizes} se fija pasandole una tupla, por ejemplo (5,8,3) significaría que hay tres capas ocultas, donde a primera capa tendría 5 unidades, la segunda 8 y la tercera 3.\\
+
+A continuación se crea un vector con las tuplas que se van a usar para el parámetro \texttt{hidden\_layer\_sizes}.
+\vspace*{0.2cm}
+
+\begin{lstlisting}
+hls = []
+for j in range(0,3):
+	for i in range(1,50,5):
+		v = []
+		for k in range(0,j+1):
+			v.append(i)
+		hls.append(v)
+	
+print("hidden_layer_sizes:\n", hls)
+\end{lstlisting}
+
+Las tuplas anteriormente generadas se corresponden con:
+
+\begin{verbatim}
+ [[1], [6], [11], [16], [21], [26], [31], [36], [41], [46], [1, 1],
+ [6, 6], [11, 11], [16, 16], [21, 21], [26, 26], [31, 31], [36, 36],
+ [41, 41], [46, 46], [1, 1, 1], [6, 6, 6], [11, 11, 11], [16, 16, 16],
+ [21, 21, 21], [26, 26, 26], [31, 31, 31], [36, 36, 36], [41, 41, 41],
+ [46, 46, 46]]
+\end{verbatim}
+
+Para ajustar el hiperparámetro \texttt{hidden\_layer\_sizes}, vamos a usar validación cruzada manteniendo la proporción de las clases. El valor de k va a ser igual a 5.
+\vspace*{0.2cm}
+
+\begin{lstlisting}
+# KFold
+k = 5
+kf = StratifiedKFold(n_splits=k)
+kf.get_n_splits(X_train,y_train)
+
+mejor = 0
+mejor_media = 0
+
+for i in range(0,len(hls)):			
+	suma = 0		
+	for train_index, test_index in kf.split(X_train,y_train):
+		X_train_, X_test_ = X_train[train_index], X_train[test_index]
+		y_train_, y_test_ = y_train[train_index], y_train[test_index]
+		
+		mlp = MLPClassifier(max_iter=500, hidden_layer_sizes = hls[i], random_state = 10)
+		mlp.fit(X_train_, y_train_)	
+		suma += mlp.score(X_test_, y_test_)		
+		
+	media = 1.0*suma/k	
+	
+	if media > mejor_media:
+		mejor_media = media
+		mejor = i
+
+print(hls[mejor])
+\end{lstlisting}
+
+En este proceso se obtuvo el siguiente warning
+
+\begin{verbatim}
+ConvergenceWarning: Stochastic Optimizer: Maximum iterations (500) reached and the 
+optimization hasn't converged yet. % self.max_iter, ConvergenceWarning)
+\end{verbatim}
+
+Debido a que con un número máximo de 500 iteraciones no llega a converger, se arreglaría facilmente aumentando las iteraciones máximas hasta que no salte el warning, pero no se ha hecho por temas de tiempo de ejecución. Anteriormente hicimos pruebas con 200 iteraciones como máximo que era el valor que venía por defecto y se obtuvieron muchos warning, motivo por el cual se aumento el número máximo de iteraciones 500, reduciendo el número de warning a solo 1.
+
+Como salida se ha obtenido \texttt{Mejor hidden\_layer\_sizes:  [31]}, es decir el que mejores resultados a dado en la validación cruzada, ha sido el modelo de solo una capa oculta con 31 unidades.
+
+Tras la obtención de la mejor arquitectura pasamos a ajustar el parámetro de regularización alpha. Lo hacemos igual que otras veces con GridSearchCV, en donde hemos usado Kfold con k=10. Y un valor de max\_iter = 500, para evitar tener warning en la convergencia.
+\vspace*{0.2cm}
+
+\begin{lstlisting}
+model = MLPClassifier(max_iter=1000, hidden_layer_sizes = hls[mejor], random_state = 10)
+
+param = {'alpha': 10.0 ** -np.arange(1, 7)}
+mlp = GridSearchCV(model, cv = 10, param_grid=param, n_jobs = 3)
+mlp.fit (X_train, y_train)
+
+print ("\nMejor valor de alpha: ", mlp.best_params_['alpha'])
+\end{lstlisting}
+
+Obtenemos: \texttt{Mejor valor de alpha:  0.1}
+
+Ahora pasamos a comprobar la precisión de nuestro modelo en los datos del train y test. Y mostramos la matriz de confusión obtenida.
+\vspace*{0.2cm}
+
+\begin{lstlisting}
+predictions_train = mlp.predict(X_train)
+predictions = mlp.predict(X_test)
+
+print ("Train Accuracy :: ", accuracy_score(y_train, predictions_train))
+print ("Test Accuracy  :: ", accuracy_score(y_test, predictions))
+print (" Confusion matrix \n", confusion_matrix(y_test, predictions))
+\end{lstlisting}
+
+Donde obtenemos como salida:
+
+\begin{verbatim}
+Train Accuracy ::  0.9929577464788732
+Test Accuracy  ::  0.986013986013986
+ Confusion matrix 
+ [[90  0]
+  [ 2 51]]
+\end{verbatim}
+
+Los valores de precisión obtenidos son muy buenos tanto en el train como en el test. Si nos fijamos hemos vuelto a obtener la misma precisión en el test que en los modelos anteriores y la misma matriz de confusión.
+
+Ahora veamos la curva de ROC obtenida.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.65\linewidth]{img/nn_roc}
+	\caption{Curva ROC}
+	\label{fig:nn_roc}
+\end{figure}
+
+De nuevo obtenemos una curva Roc muy buena lo cual indica un test muy bueno, de donde podemos deducir que el modelo tiene alta probabilidad de ser bueno.
+
+\section{Conclusión}
+
+Después de probar todos los modelos hemos llegado a los mismos resultados para el test en cada modelo, y con curvas de Roc casi iguales, habiendo ajustado lo mejor posible cada modelo, escalando los datos en ocasiones, estandarizandolos en el caso de las redes neuronales, eliminando características poco importantes obtenidas en random forest. También hemos evitado el sobreentrenamiento, mediante validación cruzada y probando distintos parámetros de regularización. Por lo que finalmente nos quedamos con el primer modelo, el modelo lineal, regresión logística, ya que nos ha dado unos resultados excepcionales y ha igualado a los demás modelos probados, siendo regresión lineal el modelo más sencillo de todos. Mencionar que en la descripción de la base de datos decía que los datos se habían conseguido ajustar perfectamente mediante un modelo lineal, cosa que ha quedado comprobada con los experimentos realizados.
+
+
+\end{document}

@@ -1,0 +1,3 @@
+\contentsline {section}{\numberline {1}Ejercicio sobre la b\'usqueda iterativa de \'optimos}{2}
+\contentsline {section}{\numberline {2}Ejercicio sobre regresi\'on lineal}{5}
+\contentsline {section}{\numberline {3}BONUS}{12}

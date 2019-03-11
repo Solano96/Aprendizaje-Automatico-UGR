@@ -1,0 +1,344 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{subfig}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[left=2.00cm, right=2.00cm, top=2.50cm, bottom=2.50cm]{geometry}
+
+\title{\textbf{\huge Trabajo 2 \\ Aprendizaje Automático}}
+
+\author{Francisco Solano López Rodríguez}
+
+\lstset
+{
+	basicstyle=\small\ttfamily,
+	commentstyle=\color{Gray},
+	keywordstyle=\color{Red},
+	frame=single,
+	language=python,
+	morekeywords={True, False},
+	numbersep=10pt,
+	numberstyle=\footnotesize\color{Gray},
+	showstringspaces=false,
+	stringstyle=\color{Mulberry},
+	tabsize=3,
+}
+
+\begin{document}
+	
+		\begin{titlepage}
+			
+			\begin{center}					
+				\vspace*{1cm}
+				\begin{figure}[htb]
+					\begin{center}
+						\includegraphics[width=15cm]{./img/logo_ugr}
+					\end{center}
+				\end{figure}			
+				\vspace*{1.5cm}
+				\begin{Large}
+					\textbf{\huge Trabajo 2 - Aprendizaje Automático} \\
+				\end{Large}
+				\vspace*{1cm}
+				\rule{140mm}{0.1mm}\\
+				\vspace*{0.5cm}
+				\begin{large}
+					Realizado por: \\
+					Francisco Solano López Rodríguez\\
+					DNI: 20100444P\\
+					Email: fransol0728@correo.ugr.es
+				\end{large}
+				
+				\vspace*{0.5cm}
+				\rule{140mm}{0.1mm}\\
+				\vspace*{1.5cm}
+			\end{center}		
+			
+			\tableofcontents
+		\end{titlepage}
+	
+	\newpage
+	
+	\section{Ejercicio sobre la complejidad de H y el ruido}
+	\begin{enumerate}
+		\item Dibujar una gráfica con la nube de puntos de salida correspondiente.
+		\begin{enumerate}
+			\item Considere $N = 50$, $dim = 2$, $rango = [-50, +50]$ con $simula\_unif (N, dim, rango)$.\\
+			
+			\lstinputlisting[language=Python, firstline=128, lastline=130]{code/codigo.py}			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\linewidth]{img/Figure_1}
+				\caption{Distribución uniforme}
+				\label{fig:Figure_1}
+			\end{figure}
+			
+			\item Considere $N = 50$, $dim = 2$ y $sigma = [5, 7]$ con $simula\_gaus(N, dim, sigma)$.\\
+			
+			\lstinputlisting[language=Python, firstline=138, lastline=140]{code/codigo.py}			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\linewidth]{img/Figure_2}
+				\caption{Distribución normal}
+				\label{fig:Figure_2}
+			\end{figure}
+			
+		\end{enumerate}
+		
+		\item Con ayuda de la función $simula\_unif()$ generar una muestra de puntos 2D a los que vamos añadir una etiqueta usando el signo de la función $f(x, y) = y-ax-b$, es decir el signo de la distancia de cada punto a la recta simulada con $simula\_recta()$.\\
+		
+		\lstinputlisting[language=Python, firstline=148, lastline=158]{code/codigo.py}
+		
+		\begin{enumerate}
+			\item Dibujar una gráfica donde los puntos muestren el resultado de su etiqueta, junto	con la recta usada para ello. (Observe que todos los puntos están bien clasificados respecto de la recta)\\
+			
+			\lstinputlisting[language=Python, firstline=164, lastline=164]{code/codigo.py}
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.65\linewidth]{img/Figure_3}
+				\label{fig:Figure_3}
+			\end{figure}
+			
+			\item Modifique de forma aleatoria un 10 \% etiquetas positivas y otro 10 \% de negativas	y guarde los puntos con sus nuevas etiquetas. Dibuje de nuevo la gráfica anterior. (Ahora hay puntos mal clasificados respecto de la recta)\\
+			
+			\lstinputlisting[language=Python, firstline=172, lastline=201]{code/codigo.py}
+		\end{enumerate}
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.65\linewidth]{img/Figure_4}
+			\label{fig:Figure_4}
+		\end{figure}
+		
+		\item Supongamos ahora que las siguientes funciones definen la frontera de clasificación de los puntos de la muestra en lugar de una recta
+		
+		\begin{itemize}
+			\item $f(x,y) = (x-10)^2+(y-20)^2-400$
+			\item $f(x,y) = 0.5(x+10)^2+(y-20)^2-400$
+			\item $f(x,y) = 0.5(x-10)^2-(y+20)^2-400$
+			\item $f(x,y) = y-20x^2-5x+3$
+		\end{itemize}
+		
+		\lstinputlisting[language=Python, firstline=244, lastline=254]{code/codigo.py}
+		
+		\textbf{\\}Visualizar el etiquetado generado en 2b junto con cada una de las gráficas de cada una de las funciones. Comparar las formas de las regiones positivas y negativas de estas nuevas funciones con las obtenidas en el caso de la recta ¿Son estas funciones más complejas mejores clasificadores que la función lineal? ¿En que ganan a la función lineal? Explicar el razonamiento.\\
+		
+		La función utilizada para visualizar las funciones junto con los datos es la siguiente:\\
+		
+		\lstinputlisting[language=Python, firstline=208, lastline=241]{code/codigo.py}
+		
+		\vspace*{0.5cm}
+		
+		\lstinputlisting[language=Python, firstline=256, lastline=266]{code/codigo.py}
+		
+		\begin{figure}[H]
+			\hspace*{-1cm}
+			\subfloat[$f(x,y) = (x-10)^2+(y-20)^2-400$]{
+				\includegraphics[width=0.55\linewidth]{img/Figure_5}
+			}
+			\subfloat[$f(x,y) = 0.5*(x+10)^2+(y-20)^2-400$]{
+				\includegraphics[width=0.55\linewidth]{img/Figure_6}
+			}
+		\end{figure}
+		
+		\begin{figure}[H]
+			\hspace*{-1cm}
+			\subfloat[$f(x,y) = 0.5*(x-10)^2-(y+20)^2-400$]{
+				\includegraphics[width=0.55\linewidth]{img/Figure_7}
+			}
+			\subfloat[$f(x,y) = y-20x^2-5x+3$]{
+				\includegraphics[width=0.55\linewidth]{img/Figure_8}
+			}
+		\end{figure}
+		
+		Estas funciones a diferencia de la utilizada en el ejercicio anterior no son lineales. La primera se corresponde con la ecuación de una circunferencia centrada en el punto (10,20) y de radio 20. La segunda una elipse centrada en el punto (-10,20). La tercera se corresponde con el corte de un hiperboloide con el plano $z=0$ y por último la cuarta se trata de una función cuadrática. Evidentemente estas funciones son más complejas que la lineal. Todas ellas tienen algo en común y es que tienen términos con exponente 2, a diferencia de la lineal que su máximo exponente era 1. Así podemos ver que está clase de funciones da lugar a funciones con una complejidad mayor que la lineal. La ventaja de estas funciones a pesar de ser más complejas es que pueden separar muchos casos en los cuales los datos no son linealmente separables, luego si extendemos la clase de la funciones lineales y añadimos estas funciones tendremos una clase más amplia y capaz de separar mas conjuntos de datos.
+		
+	\end{enumerate}
+	
+	
+	\section{Modelos lineales}
+	
+	\begin{enumerate}
+		\item \textbf{Algoritmo Perceptron:} Implementar la función $ajusta\_PLA(datos, label, max_iter, vini)$ que calcula el hiperplano solución a un problema de clasificación binaria usando el algoritmo PLA. La entrada $datos$ es una matriz donde cada item con su etiqueta está representado por una fila de la matriz, $label$ el vector de etiquetas (cada etiqueta es un valor +1 o -1),
+		$max\_iter$ es el número máximo de iteraciones permitidas y $vini$ el valor inicial del vector. La función devuelve los coeficientes del hiperplano.\\
+		
+		\lstinputlisting[language=Python, firstline=276, lastline=291]{code/codigo.py}
+		
+		\begin{enumerate}
+			\item Ejecutar el algoritmo PLA con los datos simulados en los apartados 2a de la sección.1. Inicializar el algoritmo con: a) el vector cero y, b) con vectores de números aleatorios	en [0, 1] (10 veces). Anotar el número medio de iteraciones necesarias en ambos para converger. Valorar el resultado relacionando el punto de inicio con el número de iteraciones.\\
+			
+			\lstinputlisting[language=Python, firstline=297, lastline=308]{code/codigo.py}
+			
+			\textbf{\\}Los resultados obtenidos han sido los siguientes:
+			
+			\begin{verbatim}
+			 Iteraciones con vector cero: 12
+			 Media iteraciones vector num aleatorios: 14.1
+			\end{verbatim}
+			
+			El número de iteraciones con vector de números aleatorios ha sido en media mayor que el del vector cero, luego podemos intuir que vamos a obtener menos iteraciones con el vector cero. Aunque también es cierto que el número de veces que hemos realizado el experimento de iniciar el algoritmo con un vector de números aleatorios ha sido solo de 10 y no debería ser suficiente como para sacar conclusiones. Por ello repetí el experimento pero 100 veces en lugar de 10, obteniendo los siguientes resultados.
+			
+			\begin{verbatim}
+			Iteraciones con vector cero: 12
+			Media iteraciones vector num aleatorios: 13.9
+			\end{verbatim}
+			
+			De nuevo vemos que el vector de cero ha realizado menos iteraciones.
+			
+			\item Hacer lo mismo que antes usando ahora los datos del apartado 2b de la sección.1. ¿Observa algún comportamiento diferente? En caso afirmativo diga cual y las razones para que ello ocurra.
+			
+			\lstinputlisting[language=Python, firstline=315, lastline=326]{code/codigo.py}
+			
+			En este caso los resultados obtenidos han sido:
+			
+			\begin{verbatim}
+			Iteraciones con vector cero: 500.0
+			Media iteraciones vector num aleatorios: 500.0
+			\end{verbatim}
+			
+			El número de iteraciones obtenido en ambos casos se corresponde con el número máximo de iteraciones que fijé en el algoritmo. Esto ocurriría para cualquier número de iteraciones máximas que fijemos, ya que los datos no son linealmente separables por lo que el algoritmo no terminaría nunca.
+		\end{enumerate}
+		
+		\item \textbf{Regresión Logística:} En este ejercicio crearemos nuestra propia función objetivo $f$ (una probabilidad en este caso) y nuestro conjunto de datos $\mathcal{D}$ para ver cómo funciona regresión logística. Supondremos por simplicidad que $f$ es una probabilidad con valores 0/1 y por tanto que la etiqueta $y$ es una función determinista de \textbf{x}.\\
+		
+		Consideremos $d = 2$ para que los datos sean visualizable, y sea $\mathcal{X} = [0,2] \times [0,2]$ con probabilidad uniforme de elegir cada $\textbf{x} \in \mathcal{X}$. Elegir una línea en el plano que pase por $\mathcal{X}$ como la frontera entre $f(\textbf{x}) = 1$ (donde $y$ toma valores +1) y $f(\textbf{x}) = 0$ (donde $y$ toma valores -1), para ello seleccionar dos putos aleatorios del plano y calcular la línea que pasa por ambos. Seleccionar $N = 100$ puntos aleatorios $\{x_n\}$ de $\mathcal{X}$ y evaluar las respuestas $\{y_n\}$ de todos ellos respecto de la frontera elegida.\\
+		
+		A continuación simulamos la recta pedida, los 100 puntos aleatorios $\{x_n\}$ de $\mathcal{X}$ y evaluamos las respuestas $\{y_n\}$
+		\lstinputlisting[language=Python, firstline=360, lastline=363]{code/codigo.py}
+		
+		\begin{enumerate}
+			\item Implementar Regresión Logística(RL) con Gradiente Descendente Estocástico (SGD) bajo las siguientes condiciones:
+			
+			\begin{itemize}
+				\item Inicializar el vector de pesos con valores 0.
+				
+				\item Parar el algoritmo cuando $\lVert \textbf{w}^{(t-1)}- \textbf{w}^{(t)} \lvert < 0.01$, donde $\textbf{w}^{(t)}$ denota el vector de pesos al final de la época $t$. Una época es un pase completo a través de los $N$ datos.
+						
+				\item Aplicar una permutación aleatoria, $1, 2, . . . , N$ , en el orden de los datos antes de usarlos en cada época del algoritmo.
+				
+				\item Usar una tasa de aprendizaje de $\eta = 0.01$\\
+			\end{itemize}
+			
+			\lstinputlisting[language=Python, firstline=334, lastline=358]{code/codigo.py}
+			
+			\item Usar la muestra de datos etiquetada para encontrar nuestra solución g y estimar $E_{out}$ usando para ello un número suficientemente grande de nuevas muestras $(>999)$.\\
+			
+			\lstinputlisting[language=Python, firstline=370, lastline=401]{code/codigo.py}
+			
+			Los resultados obtenidos han sido:
+			
+			\begin{verbatim}
+			    Ein: 0.02
+				
+			    Eout: 0.0375
+			\end{verbatim}
+			
+			Para el calculo del error se ha utilizado el error de acierto, para ello se han reetiquetado las etiquetas, pasando los -1 a 0. Se ha contado como fallo aquel en el que $\sigma(w^Tx_i)$ distaba mas de 0.5 de $y_i$. Los errores obtenidos, tanto para $E_{in}$ como para $E_{out}$, son bastante bajos, lo cual indica que el ajuste se ha hecho bastante bien, ya que hay un bajo porcentaje de fallo.			
+		\end{enumerate}
+	\end{enumerate}
+	
+	\section{BONUS}	
+	\textbf{Clasificación Dígitos.} Considerar el conjunto de datos de los dígitos manuscritos y seleccionar las muestras de los dígitos 4 y 8. Usar los ficheros de entrenamiento (training) y test que se proporcionan. Extraer las características de \textbf{intensidad promedio y simetría} en la manera que se indicó en el ejercicio 3 del trabajo 1.
+	
+	\begin{enumerate}
+		\item Plantear un problema de clasificación binaria que considere el conjunto de entrenamiento como datos de entrada para aprender la función $g$.
+		
+		\item Usar un modelo de Regresión Lineal y aplicar PLA-Pocket como mejora. Responder a las siguientes cuestiones.
+		
+		(a) Generar gráficos separados (en color) de los datos de entrenamiento y test junto con la función estimada.
+		
+		(b) Calcular $E_{in}$ y $E_{test}$ (error sobre los datos de test)
+		
+		(c) Obtener cotas sobre el verdadero valor de $E_{out}$. Pueden calcularse dos cotas una basada en $E_{in}$ y otra basada en $E_{test}$. Usar una tolerancia $\delta = 0.05$. ¿Qué cota es mejor?
+	\end{enumerate}					
+		
+		A continuación se muestra la función utiliza para leer los datos en la que se seleccionan las muestras de los dígitos 4 y 8.\\
+		
+		\lstinputlisting[language=Python, firstline=409, lastline=428]{code/codigo.py}
+		
+		\lstinputlisting[language=Python, firstline=486, lastline=489]{code/codigo.py}
+	
+		\vspace*{0.2cm}
+		
+		Como modelos de regresión lineal he utilizado el algoritmo de la pseudoinversa con el cual obtendremos un vector de pesos que utilizaremos como vector inicial para PLA pocket.\\
+		
+		\lstinputlisting[language=Python, firstline=431, lastline=481]{code/codigo.py}
+				
+		\textbf{\\}Gráfica de los datos de entrenamiento junto con la función estimada.
+				
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.6\linewidth]{img/Figure_9}
+			\label{fig:Figure_9}
+		\end{figure}
+		
+		Gráfica de los datos del test junto con la función estimada.\\
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.6\linewidth]{img/Figure_10}
+			\label{fig:Figure_10}
+		\end{figure}		
+				
+		\lstinputlisting[language=Python, firstline=491, lastline=501]{code/codigo.py}
+			
+		\textbf{\\}	Para calcular el error de nuevo se ha tenido en cuenta el error de acierto.\\
+			
+		\lstinputlisting[language=Python, firstline=503, lastline=509]{code/codigo.py}
+		
+		\textbf{\\}Los resultados obtenidos han sido
+		los siguientes:			
+			\begin{verbatim}
+			Ein:  0.22529313232830822			
+			Etest:  0.2540983606557377
+			\end{verbatim}
+		
+		Estos resultados indican que ha habido más de un 20\% de datos que no han sido clasificados correctamente, aún así viendo la gráfica y observando los datos junto a sus etiquetas se ve claramente que los datos no son separables linealmente, y que para haberse realizado el ajuste mediante una recta no está tan mal el error de acierto.
+		
+		\textbf{\\}Para el cálculo de la cota sobre el valor de $E_{out}$ he utilizado la fórmula dada en la siguiente desigualdad.
+		
+		\begin{equation*}
+			E_{out}(g) \leq E_{in}(g) + \sqrt{\dfrac{8}{N} log \dfrac{4((2N)^{d_{VC}}+1)}{\delta}}
+		\end{equation*}		
+		
+		\textbf{\\}
+		
+		\lstinputlisting[language=Python, firstline=511, lastline=516]{code/codigo.py}
+		
+		\textbf{\\}Los valores sobre la cota obtenidos han sido los siguientes:
+		
+		\begin{verbatim}
+		    Cotas sobre el valor de Eout:
+		
+		    Cota basada en Ein: 0.6562296377990118
+		    Cota basada en Etest: 0.9809354817361753
+		\end{verbatim}
+		
+		La cota mejor ha resultado ser a de $E_{in}$, uno de los motivos, aparte de que el valor de $E_{test}$ es mayor, es que el conjunto de test tenía menos datos que el de training.\\
+		
+		Las cotas no nos dan valores muy optimistas, pero solo son cotas teóricas, en  la práctica puede ser preferible obtener estimaciones sobre el valor de $E_{out}$ mediante el valor de $E_{test}$, cuanto mayor sea el conjunto para el test mejor será la estimación realizada. Esto es debido a la siguiente desigualdad:
+		
+		\begin{equation*}
+			P(|E_{test}(g)-E_{out}(g)| > \epsilon) \leq 2e^{-2N\epsilon^2}
+		\end{equation*}
+		
+		Cierta para todo $\epsilon$ y para todo g.\\
+		
+		Conforme crece el valor de N la parte de la derecha de la desigualdad se hace menor y como es cierta para todo $\epsilon$ podemos tomar una valor de $\epsilon$ tan pequeño como queramos y al aumentar el valor de N hacer que la probabilidad de que $E_{out}(g)$ y $E_{test}(g)$ difieran más de un valor $\epsilon$ tienda a cero. Por lo que cuanto más datos para el test tengamos mejor será la estimación sobre el $E_{out}$.
+\end{document}
+
+
+
+
+
+
+
+
+

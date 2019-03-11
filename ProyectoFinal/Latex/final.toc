@@ -1,0 +1,8 @@
+\select@language {spanish}
+\contentsline {section}{\numberline {1}Descripci\'on del problema.}{1}
+\contentsline {section}{\numberline {2}Lectura y preprocesado de los datos.}{2}
+\contentsline {section}{\numberline {3}Modelo lineal - Regresi\'on Log\IeC {\'\i }stica.}{3}
+\contentsline {section}{\numberline {4}Modelos no-lineales - Random Forest.}{5}
+\contentsline {section}{\numberline {5}Modelos no-lineales - Support Vector Machine.}{8}
+\contentsline {section}{\numberline {6}Modelos no-lineales - Redes Neuronales}{10}
+\contentsline {section}{\numberline {7}Conclusi\'on}{13}

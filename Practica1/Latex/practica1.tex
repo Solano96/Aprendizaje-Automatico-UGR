@@ -1,0 +1,321 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{subfig}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[left=3.00cm, right=3.00cm, top=3.50cm, bottom=3.50cm]{geometry}
+
+\title{\textbf{Trabajo 1 - Aprendizaje automático}}
+
+\author{Francisco Solano López Rodríguez}
+
+\lstset
+{
+	basicstyle=\small\ttfamily,
+	commentstyle=\color{Gray},
+	keywordstyle=\color{Red},
+	frame=single,
+	language=python,
+	morekeywords={True, False},
+	numbersep=10pt,
+	numberstyle=\footnotesize\color{Gray},
+	showstringspaces=false,
+	stringstyle=\color{Mulberry},
+	tabsize=3,
+}
+
+\begin{document}
+	\maketitle	
+	\tableofcontents
+	\newpage
+	
+	\section{Ejercicio sobre la búsqueda iterativa de óptimos}
+	\textbf{Gradiente Descendente}
+	
+	\begin{enumerate}
+		\item Implementar el algoritmo de gradiente descendente.\\
+		
+		\lstinputlisting[language=Python, firstline=46, lastline=54]{code/p1.py}
+		
+		\text{\\}
+		\item Considerar la función $E(u,v) = (u^3e^{(v-2)}-4v^3e^{-u})^2$ Usar gradiente descendente para encontrar un mínimo de esta función, comenzando desde el punto $(u, v) = (1, 1)$ y usando una tasa de aprendizaje $\eta = 0,05$.
+		
+		\begin{enumerate}
+			\item Calcular analíticamente y mostrar la expresión del gradiente de la función $E(u, v)$.\\
+			\lstinputlisting[language=Python, firstline=23, lastline=44]{code/p1.py}
+			\text{\\}
+			
+			Expresión de las derivadas parciales y el gradiente:
+			\begin{equation*}
+				\dfrac{\partial E}{\partial u}(u,v)= 2(u^3e^{(v-2)}-4v^3e^{-u})(3u^2e^{(v-2)}+4v^3e^{-u})
+			\end{equation*}
+			\begin{equation*}	
+				\dfrac{\partial E}{\partial v}(u,v)= 2(u^3e^{(v-2)}-4v^3e^{-u})(u^3e^{(v-2)}-12v^2e^{-u})
+			\end{equation*}
+			\begin{equation*}		
+				\nabla E = \left(\dfrac{\partial E}{\partial u}, \dfrac{\partial E}{\partial v}\right)
+			\end{equation*}
+			
+			\item ¿Cuántas iteraciones tarda el algoritmo en obtener por primera vez un valor de $E(u, v)$ inferior a $10^{-14}$. (Usar flotantes de 64 bits)
+			\lstinputlisting[language=Python, firstline=56, lastline=64]{code/p1.py}
+			\textbf{\\}			
+			Obtuve un valor de $E(u,v)$ inferior a $10^{-14}$ tras 38 iteraciones.\\
+			
+			\item ¿En qué coordenadas $(u, v)$ se alcanzó por primera vez un valor igual o menor a $10^{-14}$ en el apartado anterior.
+			
+			Las coordenadas en las que fue alcanzado son:
+			\begin{equation*}
+				(u,v) = (\ 1.1195438968186378, \ \ 0.6539880585437983 \ )
+			\end{equation*}
+			
+		\end{enumerate}
+		
+		\item Considerar ahora la función $f(x,y) = (x-2)^2+2(y+2)^2+2\sin(2 \pi x)\sin(2 \pi y)$
+		\lstinputlisting[language=Python, firstline=73, lastline=92]{code/p1.py}
+		\begin{itemize}
+			\item Usar gradiente descendente para minimizar esta función. Usar como punto inicial $(x_0 = 1, y_0 = 1)$, tasa de aprendizaje $\eta = 0,01$ y un máximo de 50 iteraciones. Generar un gráfico de cómo desciende el valor de la función con las iteraciones. Repetir el	experimento pero usando $\eta = 0,1$, comentar las diferencias y su dependencia de $\eta$.\\			
+			
+			\lstinputlisting[language=Python, firstline=96, lastline=111]{code/p1.py}
+			
+			\begin{figure}[h]
+				\centering
+				\subfloat[$\eta = 0.01$]{
+					\includegraphics[width=0.5\linewidth]{img/Figure_1}
+				}
+				\subfloat[$\eta = 0.1$]{
+					\includegraphics[width=0.5\linewidth]{img/Figure_2}
+				}
+			\end{figure}
+			
+			Viendo estas gráficas es mas que evidente que la convergencia del algoritmo gradiente descendente depende de la tasa de aprendizaje, en el primer caso con una tasa de aprendizaje de $0.01$ vemos que se converge a un mínimo local, mientras que en el segundo caso con tasa de aprendizaje igual a $0.1$ no se converge sino que va oscilando. Por lo que vemos que una elección acertada del learning rate es muy importante para asegurar la convergencia ya que si el valor es muy grande como pasa en el segundo caso puede que nunca encontremos un mínimo, por el contrario si cogemos un valor cada vez más pequeño podemos llegar a asegurar la convergencia, el problema es que si es demasiado pequeño dicha convergencia puede ser muy lenta.
+			
+			\item Obtener el valor mínimo y los valores de las variables $(x, y)$ en donde se alcanzan cuando el punto de inicio se fija: $(2,1, -2,1), (3, -3),(1,5, 1,5),(1, -1)$. Generar una tabla con los valores obtenidos.\\
+			\lstinputlisting[language=Python, firstline=119, lastline=149]{code/p1.py}\textbf{\\}
+			\renewcommand{\arraystretch}{1.4}
+			\begin{tabular}{|c|c|c|}
+				\hline
+				Punto inicio & (x,y) & f(x,y) \\ \hline
+				(2.1, -2.1) & ( 2.2438049693647883 ,  -2.237925821486178 ) & -1.8200785415471563 \\ \hline
+				(3.0, -3.0) & ( 2.7309356482481055 ,  -2.7132791261667037 ) & -0.38124949743809955 \\ \hline
+				(1.5, 1.5) & ( 1.7779244744891156 ,  1.032056872669696 ) & 18.042078009957635 \\ \hline
+				(1.0, -1.0) & ( 1.269064351751895 ,  -1.2867208738332965 ) & -0.3812494974381 \\ \hline
+			\end{tabular} \\
+		\end{itemize}
+		
+		\item ¿Cuál sería su conclusión sobre la verdadera dificultad de encontrar el mínimo global de una función arbitraria?\\
+		
+		La principal dificultad que nos encontramos es elegir el punto de inicio ya que este va a determinar el mínimo local al que se va a converger en caso de que haya más de un mínimo, en cuyo caso puede ser que no se converja al mínimo global. En el caso de una función convexa acotada no tenemos este problema, ya que este tipo de funciones solamente tienen un mínimo y por tanto debe ser global.\\
+		
+		El siguiente problema que nos encontramos es la elección del learning rate ya que con un valor alto podríamos no converger nunca. Y además en el caso de un valor demasiado pequeño podría ser una convergencia demasiado lenta.
+		
+	\end{enumerate}
+	
+	\section{Ejercicio sobre regresión lineal}
+	Este ejercicio ajusta modelos de regresión a vectores de características extraídos de imágenes de dígitos manuscritos. En particular se extraen dos características concretas: el valor medio del nivel de gris y simetría del número respecto de su eje vertical. Solo se seleccionarán para este	ejercicio las imágenes de los números 1 y 5.\\
+	\lstinputlisting[language=Python, firstline=160, lastline=180]{code/p1.py}\textbf{\\}
+	
+	\begin{enumerate}
+		\item Estimar un modelo de regresión lineal a partir de los datos proporcionados de	dichos números (Intensidad promedio, Simetría) usando tanto el algoritmo de la pseudoinversa como Gradiente descendente estocástico (SGD). Las etiquetas serán {-1, 1}, una	para cada vector de cada uno de los números. Pintar las soluciones obtenidas junto con los datos usados en el ajuste. Valorar la bondad del resultado usando $E_{in}$ y $E_{out}$ (para $E_{out}$ calcular las predicciones usando los datos del fichero de test). ( usar $Regress\_Lin(datos, label)$
+		como llamada para la función (opcional)).\\
+		
+		Funciones implementadas: \\
+		\lstinputlisting[language=Python, firstline=182, lastline=215]{code/p1.py}
+		
+		\textbf{\\}Ejecutamos el algoritmo del Gradiente Descendente Estocástico con learning rate $0.01$, número de iteraciones igual a 500 y tamaño de minibatch igual a 64. A continuación ejecutamos el algoritmo de la pseudo inversa. \\
+		
+		\lstinputlisting[language=Python, firstline=217, lastline=259]{code/p1.py}\textbf{\\}
+		
+		Los valores obtenidos para valorar la bondad del resultado en el gradiente descendente estocástico son:
+		
+		\begin{itemize}
+			\item $E_{in} = 0.08207838897626317$
+			\item $E_{out} = 0.13696552396953135$
+		\end{itemize}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.6\linewidth]{img/Figure_3}
+			\caption{Gradiente Descendente Estocástico}
+			\label{fig:Figure_3}
+		\end{figure}
+
+		Los valores obtenidos para valorar la bondad del resultado en el algoritmo de la pseudoinversa son:
+		
+		\begin{itemize}
+			\item $E_{in} = 0.07918658628900395$
+			\item $E_{out} = 0.13095383720052584$
+		\end{itemize}	
+
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.6\linewidth]{img/Figure_4}
+			\caption{Pseudoinversa}
+			\label{fig:Figure_4}
+		\end{figure}	
+			
+		Podemos ver que el mejor ajuste se consigue con el de la pseudoinversa, en donde tanto el $E_{in}$ como el $E_{out}$ son algo más bajos que en el SGD.\\
+		
+		\item En este apartado exploramos como se transforman los errores $E_{in}$ y $E_{out}$ cuando aumentamos la complejidad del modelo lineal usado. Ahora hacemos uso de la función $simula\_unif (N, 2, size)$ que nos devuelve $N$ coordenadas 2D de puntos uniformemente
+		muestreados dentro del cuadrado definido por $[-size, size] × [-size, size]$
+		
+		\lstinputlisting[language=Python, firstline=265, lastline=267]{code/p1.py}
+		
+		EXPERIMENTO:
+		\begin{enumerate}
+			\item Generar una muestra de entrenamiento de $N = 1000$ puntos en el cuadrado $\mathrm{X} = [-1, 1] × [-1, 1]$. Pintar el mapa de puntos 2D. (ver función de ayuda)\\
+			
+			\lstinputlisting[language=Python, firstline=275, lastline=277]{code/p1.py}
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\linewidth]{img/Figure_5}
+				\caption{Muestra de entrenamiento N = 1000,  [-1,1]x[-1,1]}
+				\label{fig:Figure_5}
+			\end{figure}	
+			
+			\item Consideremos la función $f (x_1 , x_2 ) = sign((x_1 - 0,2)^2 + x^2_2 - 0,6)$ que usaremos	para asignar una etiqueta a cada punto de la muestra anterior. Introducimos ruido sobre las etiquetas cambiando aleatoriamente el signo de un 10 \% de las	mismas. Pintar el mapa de etiquetas obtenido.
+			
+			\lstinputlisting[language=Python, firstline=282, lastline=316]{code/p1.py}
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\linewidth]{img/Figure_6}
+				\caption{Muestra de entrenamiento N = 1000,  [-1,1]x[-1,1]\\ con etiquetas y ruido introducido}
+				\label{fig:Figure_6}
+			\end{figure}	
+			
+			\item Usando como vector de características $(1, x_1 , x_2 )$ ajustar un modelo de regresión lineal al conjunto de datos generado y estimar los pesos w. Estimar el error de
+			ajuste $E_{in}$ usando Gradiente Descendente Estocástico (SGD).
+			
+			\lstinputlisting[language=Python, firstline=322, lastline=334]{code/p1.py}
+			
+			El error de ajuste $E_{in}$ obtenido es:
+			\begin{equation*}
+				E_{in} = 0.9565534009344919
+			\end{equation*}
+			El cual es un error bastante grande. Como podemos apreciar en la siguiente figura el ajuste es bastante malo.
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\linewidth]{img/Figure_7}
+				\caption{Recta de regresión}
+				\label{fig:Figure_7}
+			\end{figure}	
+			\item Ejecutar todo el experimento definido por (a)-(c) 1000 veces (generamos 1000 muestras diferentes) y
+			\begin{itemize}
+				\item Calcular el valor medio de los errores $E_{in}$ de las 1000 muestras.
+				\item Generar 1000 puntos nuevos por cada iteración y calcular con ellos el valor de $E_{out}$ en dicha iteración. Calcular el valor medio de $E_{out}$ en todas las iteraciones.
+			\end{itemize}
+			
+			\lstinputlisting[language=Python, firstline=344, lastline=384]{code/p1.py}
+			
+			\textbf{\\}Los errores medios obtenidos han sido los siguientes:
+			\begin{itemize}
+				\item $E_{in}$ medio:  0.9901838960913539
+				\item $E_{out}$ medio:  0.9993185733209056
+			\end{itemize}
+			
+			\item Valore que tan bueno considera que es el ajuste con este modelo lineal a la vista de los valores medios obtenidos de $E_{in}$ y $E_{out}$
+			
+			Evidentemente el ajuste con este modelo lineal es nefasto, solo con ver los datos representados ya intuimos que con una recta no vamos a poder hacer un buen ajuste, cosa que aseguramos tras calcular los valores medios de los errores $E_{in}$ y $E_{out}$.\\
+			Sin tener que hacer cálculos solo con la vista se puede apreciar que una buena forma de realizar el ajuste seria con una circunferencia o tal vez mejor una elipse es decir una curva del tipo $h_1(x_1 - p_1)^2 + h_2(x_2-p_2)^2 = R^2$, que precisamente es del mismo tipo con el que se realizó la asignación de etiquetas.
+		\end{enumerate}
+	\end{enumerate}
+	
+	\section{BONUS}
+	
+	\begin{enumerate}
+		\item Método de Newton Implementar el algoritmo de minimización de Newton y aplicarlo a la función $f (x, y)$ dada en el ejercicio.3. Desarrolle los mismos experimentos usando los mismos puntos de inicio.
+				
+		\lstinputlisting[language=Python, firstline=392, lastline=422]{code/p1.py}
+	
+		\begin{itemize}
+			\item Generar un gráfico de como desciende el valor de la función con las iteraciones.
+			\item Extraer conclusiones sobre las conductas de los algoritmos comparando la curva de
+			decrecimiento de la función calculada en el apartado anterior y la correspondiente
+			obtenida con gradiente descendente.
+		\end{itemize}
+		
+				Realización de los experimentos que se realizaron en el ejercicio 3.
+				
+				\lstinputlisting[language=Python, firstline=424, lastline=474]{code/p1.py}
+				
+				\textbf{Tabla que obtuvimos con el gradiente descendente:}\\
+				
+				\renewcommand{\arraystretch}{1.4}
+				\begin{tabular}{|c|c|c|}
+					\hline
+					Punto inicio & (x,y) & f(x,y) \\ \hline
+					(2.1, -2.1) & ( 2.2438049693647883 ,  -2.237925821486178 ) & -1.8200785415471563 \\ \hline
+					(3.0, -3.0) & ( 2.7309356482481055 ,  -2.7132791261667037 ) & -0.38124949743809955 \\ \hline
+					(1.5, 1.5) & ( 1.7779244744891156 ,  1.032056872669696 ) & 18.042078009957635 \\ \hline
+					(1.0, -1.0) & ( 1.269064351751895 ,  -1.2867208738332965 ) & -0.3812494974381 \\ \hline
+				\end{tabular}
+				
+				\textbf{Tabla obtenida con el método de Newton:}\\
+				
+				\begin{tabular}{|c|c|c|}
+					\hline
+					Punto inicio & (x,y) & f(x,y) \\ \hline
+					(2.1, -2.1) & ( 2.0483213104654476 ,  -2.048629673742527 ) & -0.17280511826376682 \\ \hline
+					(3.0, -3.0) & ( 3.0203273365663774 ,  -3.010455841088583 ) & 3.0663860721823983 \\ \hline
+					(1.5, 1.5) & ( 1.4282443947688035 ,  1.5074740500301447 ) & 24.890743051687227 \\ \hline
+					(1.0, -1.0) & ( 0.9796726634336232 ,  -0.9895441589114156 ) & 3.0663860721824006 \\ \hline
+				\end{tabular}
+				
+				\textbf{\\\\}Vemos que los resultados obtenidos con el método de Newton son mucho peores a los obtenidos con gradiente descendente.Ahora pasamos a ver las gráficas comparativas de ambos algoritmos con learning rate igual a $0.01$ y $0.1$.
+				
+				\begin{figure}[H]
+					\centering
+					\subfloat[Gradiente descendente $\eta = 0.01$]{
+						\includegraphics[width=0.5\linewidth]{img/Figure_1}
+					}
+					\subfloat[Método de Newton $\eta = 0.01$]{
+						\includegraphics[width=0.5\linewidth]{img/Figure_8}
+					}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\subfloat[Gradiente descendente $\eta = 0.1$]{
+						\includegraphics[width=0.5\linewidth]{img/Figure_2}
+					}
+					\subfloat[Método de Newton $\eta = 0.1$]{
+						\includegraphics[width=0.5\linewidth]{img/Figure_9}
+					}
+				\end{figure}
+				
+				Podemos ver que ni siquiera converge en el método de Newton.\
+							
+				El método de Newton bajo ciertas condiciones converge más rápido que el gradiente descendente el problema es que se necesitan cumplir las condiciones de convergencia ya que el método ni siquiera garantiza la convergencia. Para asegurar la convergencia debemos de elegir un punto inicial próximo al mínimo buscado.\\
+				
+				He realizado el experimento con el método de Newton con punto de inicio $(1.0,1.0)$, learning rate de $0.01$ y 2000 iteraciones.
+				
+				\lstinputlisting[language=Python, firstline=480, lastline=488]{code/p1.py}
+				
+				La gráfica obtenida es la siguiente:
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.5\linewidth]{img/Figure_10}
+					\caption{Método de Newton 2000 iteraciones}
+					\label{fig:Figure_10}
+				\end{figure}
+				
+				Vemos que al principio no converge y oscila mucho, pero al final acaba convergiendo. Esto puede ser debido a que no se encontraba cerca de ningún mínimo, pero después de muchas iteraciones ha llegado a un sitio con un mínimo cercano y a partir de ese momento a convergido rapidamente hacia él.
+		
+	\end{enumerate}
+\end{document}
+
+
+
+
+
+
+
+
+
